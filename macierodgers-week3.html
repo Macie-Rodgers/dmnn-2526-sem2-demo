@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.25">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>macierodgers-week3</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="macierodgers-week3_files/libs/clipboard/clipboard.min.js"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/popper.min.js"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="macierodgers-week3_files/libs/quarto-html/anchor.min.js"></script>
+<link href="macierodgers-week3_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="macierodgers-week3_files/libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="macierodgers-week3_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="macierodgers-week3_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="macierodgers-week3_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="macierodgers-week3_files/libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet">
+<script src="macierodgers-week3_files/libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#task-1---unit-of-analysis-model-ready-dataset" id="toc-task-1---unit-of-analysis-model-ready-dataset" class="nav-link active" data-scroll-target="#task-1---unit-of-analysis-model-ready-dataset"><span class="header-section-number">1</span> Task 1 - Unit of analysis + model-ready dataset</a>
+  <ul class="collapse">
+  <li><a href="#decision-from-week-1" id="toc-decision-from-week-1" class="nav-link" data-scroll-target="#decision-from-week-1"><span class="header-section-number">1.1</span> Decision (from Week 1)</a></li>
+  <li><a href="#written-explanation-required" id="toc-written-explanation-required" class="nav-link" data-scroll-target="#written-explanation-required"><span class="header-section-number">1.2</span> Written explanation (required)</a></li>
+  <li><a href="#load-minimal-cleaning" id="toc-load-minimal-cleaning" class="nav-link" data-scroll-target="#load-minimal-cleaning"><span class="header-section-number">1.3</span> Load + minimal cleaning</a></li>
+  </ul></li>
+  <li><a href="#task-2---customer-level-dataset-for-modelling" id="toc-task-2---customer-level-dataset-for-modelling" class="nav-link" data-scroll-target="#task-2---customer-level-dataset-for-modelling"><span class="header-section-number">2</span> Task 2 - Customer-level dataset for modelling</a>
+  <ul class="collapse">
+  <li><a href="#aim-what-we-are-predicting" id="toc-aim-what-we-are-predicting" class="nav-link" data-scroll-target="#aim-what-we-are-predicting"><span class="header-section-number">2.1</span> Aim (what we are predicting)</a></li>
+  <li><a href="#target-definition-critical-thinking" id="toc-target-definition-critical-thinking" class="nav-link" data-scroll-target="#target-definition-critical-thinking"><span class="header-section-number">2.2</span> Target definition (critical thinking)</a></li>
+  </ul></li>
+  <li><a href="#task-3-feature-construction" id="toc-task-3-feature-construction" class="nav-link" data-scroll-target="#task-3-feature-construction"><span class="header-section-number">3</span> Task 3 — Feature construction</a>
+  <ul class="collapse">
+  <li><a href="#what-features-we-will-use-written-explanation" id="toc-what-features-we-will-use-written-explanation" class="nav-link" data-scroll-target="#what-features-we-will-use-written-explanation"><span class="header-section-number">3.1</span> What features we will use (written explanation)</a></li>
+  <li><a href="#build-features-safely-avoid-leakage" id="toc-build-features-safely-avoid-leakage" class="nav-link" data-scroll-target="#build-features-safely-avoid-leakage"><span class="header-section-number">3.2</span> Build features safely (avoid leakage)</a></li>
+  </ul></li>
+  <li><a href="#task-4-train-tree-based-models" id="toc-task-4-train-tree-based-models" class="nav-link" data-scroll-target="#task-4-train-tree-based-models"><span class="header-section-number">4</span> Task 4 — Train tree-based models</a>
+  <ul class="collapse">
+  <li><a href="#trainvalidationtest-split-stratified" id="toc-trainvalidationtest-split-stratified" class="nav-link" data-scroll-target="#trainvalidationtest-split-stratified"><span class="header-section-number">4.1</span> Train/Validation/Test split (stratified)</a></li>
+  <li><a href="#helper-functions-for-evaluation-used-in-later-tasks" id="toc-helper-functions-for-evaluation-used-in-later-tasks" class="nav-link" data-scroll-target="#helper-functions-for-evaluation-used-in-later-tasks"><span class="header-section-number">4.2</span> Helper functions for evaluation (used in later tasks)</a></li>
+  <li><a href="#model-1-single-decision-tree-rpart" id="toc-model-1-single-decision-tree-rpart" class="nav-link" data-scroll-target="#model-1-single-decision-tree-rpart"><span class="header-section-number">4.3</span> Model 1 — Single decision tree (rpart)</a></li>
+  <li><a href="#model-2-random-forest-ranger" id="toc-model-2-random-forest-ranger" class="nav-link" data-scroll-target="#model-2-random-forest-ranger"><span class="header-section-number">4.4</span> Model 2 — Random forest (ranger)</a></li>
+  <li><a href="#model-3-boosted-tree-model-gbm" id="toc-model-3-boosted-tree-model-gbm" class="nav-link" data-scroll-target="#model-3-boosted-tree-model-gbm"><span class="header-section-number">4.5</span> Model 3 — Boosted tree model (gbm)</a></li>
+  </ul></li>
+  <li><a href="#task-5-evaluate-models-on-validation-set-comparison" id="toc-task-5-evaluate-models-on-validation-set-comparison" class="nav-link" data-scroll-target="#task-5-evaluate-models-on-validation-set-comparison"><span class="header-section-number">5</span> Task 5 — Evaluate models on validation set (comparison)</a></li>
+  <li><a href="#task-6-final-evaluation-on-the-test-set-conclusion" id="toc-task-6-final-evaluation-on-the-test-set-conclusion" class="nav-link" data-scroll-target="#task-6-final-evaluation-on-the-test-set-conclusion"><span class="header-section-number">6</span> Task 6 — Final evaluation on the test set + conclusion</a>
+  <ul class="collapse">
+  <li><a href="#aim" id="toc-aim" class="nav-link" data-scroll-target="#aim"><span class="header-section-number">6.1</span> Aim</a></li>
+  <li><a href="#test-set-evaluation-best-model-only" id="toc-test-set-evaluation-best-model-only" class="nav-link" data-scroll-target="#test-set-evaluation-best-model-only"><span class="header-section-number">6.2</span> Test-set evaluation (best model only)</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">7</span> Conclusion</a></li>
+  <li><a href="#critical-reflection-limitations" id="toc-critical-reflection-limitations" class="nav-link" data-scroll-target="#critical-reflection-limitations"><span class="header-section-number">8</span> Critical reflection / limitations</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">9</span> Next steps</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">macierodgers-week3</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Setup</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.2.0     ✔ readr     2.1.6
+✔ forcats   1.0.1     ✔ stringr   1.6.0
+✔ ggplot2   4.0.2     ✔ tibble    3.3.1
+✔ lubridate 1.9.4     ✔ tidyr     1.3.2
+✔ purrr     1.2.1     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at /Users/trodgers/Documents/GitHub/dmnn-2526-sem2-demo</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># modelling + evaluation</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rsample)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rpart)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rpart.plot)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(yardstick)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'yardstick'
+
+The following object is masked from 'package:readr':
+
+    spec</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># alternative model</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ranger)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="task-1---unit-of-analysis-model-ready-dataset" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="task-1---unit-of-analysis-model-ready-dataset"><span class="header-section-number">1</span> Task 1 - Unit of analysis + model-ready dataset</h2>
+<section id="decision-from-week-1" class="level3" data-number="1.1">
+<h3 data-number="1.1" class="anchored" data-anchor-id="decision-from-week-1"><span class="header-section-number">1.1</span> Decision (from Week 1)</h3>
+<p><strong>Unit of analysis (modelling stage):</strong> customer-level (one row per customer).<br>
+<strong>Key cleaning decisions:</strong> keep a “purchases only” dataset by removing cancellations/returns and invalid values (negative/zero Quantity or Price).</p>
+</section>
+<section id="written-explanation-required" class="level3" data-number="1.2">
+<h3 data-number="1.2" class="anchored" data-anchor-id="written-explanation-required"><span class="header-section-number">1.2</span> Written explanation (required)</h3>
+<p>At modelling time, one row represents a single customer snapshot at a chosen cutoff date, summarising their past behaviour (e.g., how recently they bought, how often they buy, and how much they spend). This makes sense for tree-based models because trees handle nonlinear thresholds (e.g., “if recency &gt; 60 days then…”), interactions, and mixed feature types (numeric + categorical like Country). A limitation is that customers with missing IDs are excluded, which can bias results if those customers behave differently.</p>
+</section>
+<section id="load-minimal-cleaning" class="level3" data-number="1.3">
+<h3 data-number="1.3" class="anchored" data-anchor-id="load-minimal-cleaning"><span class="header-section-number">1.3</span> Load + minimal cleaning</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_raw <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"raw"</span>, <span class="st">"online_retail_II(4).csv"</span>), <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> df_raw <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">InvoiceDate =</span> <span class="fu">dmy_hms</span>(InvoiceDate),</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">TotalPrice  =</span> Quantity <span class="sc">*</span> Price,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">is_cancel   =</span> <span class="fu">str_starts</span>(Invoice, <span class="st">"C"</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Purchases only dataset</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>df_purchases <span class="ot">&lt;-</span> df1 <span class="sc">%&gt;%</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>is_cancel, Quantity <span class="sc">&gt;</span> <span class="dv">0</span>, Price <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(InvoiceDate))</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df_purchases)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 511,565
+Columns: 10
+$ Invoice       &lt;chr&gt; "489434", "489434", "489434", "489434", "489434", "48943…
+$ StockCode     &lt;chr&gt; "85048", "79323P", "79323W", "22041", "21232", "22064", …
+$ Description   &lt;chr&gt; "15CM CHRISTMAS GLASS BALL 20 LIGHTS", "PINK CHERRY LIGH…
+$ Quantity      &lt;dbl&gt; 12, 12, 12, 48, 24, 24, 24, 10, 12, 12, 24, 12, 10, 18, …
+$ InvoiceDate   &lt;dttm&gt; 2020-12-01 09:07:45, 2020-12-01 09:07:45, 2020-12-01 09…
+$ Price         &lt;dbl&gt; 6.95, 6.75, 6.75, 2.10, 1.25, 1.65, 1.25, 5.95, 2.55, 3.…
+$ `Customer ID` &lt;dbl&gt; 13085, 13085, 13085, 13085, 13085, 13085, 13085, 13085, …
+$ Country       &lt;chr&gt; "United Kingdom", "United Kingdom", "United Kingdom", "U…
+$ TotalPrice    &lt;dbl&gt; 83.40, 81.00, 81.00, 100.80, 30.00, 39.60, 30.00, 59.50,…
+$ is_cancel     &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, …</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="task-2---customer-level-dataset-for-modelling" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="task-2---customer-level-dataset-for-modelling"><span class="header-section-number">2</span> Task 2 - Customer-level dataset for modelling</h2>
+<section id="aim-what-we-are-predicting" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="aim-what-we-are-predicting"><span class="header-section-number">2.1</span> Aim (what we are predicting)</h3>
+<p>We create <strong>one row per customer</strong> (customer-level features) and define a simple binary target:</p>
+<p><strong>Purchased in the last 30 days of the dataset</strong> (1 = yes, 0 = no).</p>
+<p>This is a <strong>classification</strong> task.</p>
+</section>
+<section id="target-definition-critical-thinking" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="target-definition-critical-thinking"><span class="header-section-number">2.2</span> Target definition (critical thinking)</h3>
+<p><strong>Target = 1</strong> if a customer made at least one purchase in the final 30 days of the dataset.<br>
+<strong>Assumption:</strong> behaviour in the final 30 days is a meaningful proxy for “recent activity”.</p>
+<p><strong>Risk/ambiguity:</strong> customers with missing Customer IDs are excluded, and the “last 30 days” window is arbitrary (other windows could change results).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only rows with a Customer ID (needed for customer-level modelling)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>df_purchases_id <span class="ot">&lt;-</span> df_purchases <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Define cutoff and the last-30-days label window</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>cutoff_date <span class="ot">&lt;-</span> <span class="fu">max</span>(df_purchases_id<span class="sc">$</span>InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>label_window_days <span class="ot">&lt;-</span> <span class="dv">30</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>label_start <span class="ot">&lt;-</span> cutoff_date <span class="sc">-</span> <span class="fu">days</span>(label_window_days)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>cutoff_date</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2020-12-23 09:16:58 UTC"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>label_start</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2020-11-23 09:16:58 UTC"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IMPORTANT: avoid leakage</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Features should come from BEFORE the label window</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>df_hist <span class="ot">&lt;-</span> df_purchases_id <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(InvoiceDate <span class="sc">&lt;</span> label_start)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Customer-level features (interpretable)</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>cust_features <span class="ot">&lt;-</span> df_hist <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_invoices =</span> <span class="fu">n_distinct</span>(Invoice),</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_items    =</span> <span class="fu">n</span>(),  <span class="co"># number of line-items</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_products =</span> <span class="fu">n_distinct</span>(StockCode),</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_spend =</span> <span class="fu">sum</span>(TotalPrice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_item_price =</span> <span class="fu">mean</span>(Price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_basket_value =</span> total_spend <span class="sc">/</span> n_invoices,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">first_purchase =</span> <span class="fu">min</span>(InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">last_purchase  =</span> <span class="fu">max</span>(InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">recency_days =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(label_start, last_purchase, <span class="at">units =</span> <span class="st">"days"</span>)),</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">active_span_days =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(last_purchase, first_purchase, <span class="at">units =</span> <span class="st">"days"</span>)),</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">top_country =</span> <span class="fu">names</span>(<span class="fu">sort</span>(<span class="fu">table</span>(Country), <span class="at">decreasing =</span> <span class="cn">TRUE</span>))[<span class="dv">1</span>],</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">top_country =</span> <span class="fu">as.factor</span>(top_country))</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Target label: did they buy in the last 30 days?</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>cust_label <span class="ot">&lt;-</span> df_purchases_id <span class="sc">%&gt;%</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(InvoiceDate <span class="sc">&gt;=</span> label_start) <span class="sc">%&gt;%</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">y_last30 =</span> <span class="dv">1</span>L, <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Customers not appearing in last 30 days are y=0</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>df_model <span class="ot">&lt;-</span> cust_features <span class="sc">%&gt;%</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(cust_label, <span class="at">by =</span> <span class="st">"Customer ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y_last30 =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(y_last30), <span class="dv">0</span>L, y_last30),</span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">y_last30 =</span> <span class="fu">factor</span>(y_last30, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>first_purchase, <span class="sc">-</span>last_purchase)  <span class="co"># keep features simple + numeric-friendly</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 4,063
+Columns: 11
+$ `Customer ID`    &lt;dbl&gt; 12346, 12347, 12348, 12349, 12352, 12353, 12355, 1235…
+$ n_invoices       &lt;int&gt; 6, 1, 1, 3, 1, 1, 1, 2, 2, 1, 4, 4, 3, 1, 1, 3, 3, 3,…
+$ n_items          &lt;int&gt; 28, 40, 20, 102, 6, 20, 22, 57, 165, 18, 83, 87, 19, …
+$ n_products       &lt;int&gt; 25, 40, 20, 90, 6, 20, 22, 53, 165, 17, 78, 74, 14, 3…
+$ total_spend      &lt;dbl&gt; 259.36, 611.53, 222.16, 2671.14, 143.75, 317.76, 488.…
+$ avg_item_price   &lt;dbl&gt; 6.691429, 1.834000, 0.719500, 8.581765, 2.075000, 1.9…
+$ avg_basket_value &lt;dbl&gt; 43.22667, 611.53000, 222.16000, 890.38000, 143.75000,…
+$ recency_days     &lt;dbl&gt; 147.960475, 22.960162, 56.959711, 25.964294, 10.96294…
+$ active_span_days &lt;dbl&gt; 1.760031e+02, 0.000000e+00, 0.000000e+00, 1.819966e+0…
+$ top_country      &lt;fct&gt; United Kingdom, Iceland, Finland, Italy, Norway, Bahr…
+$ y_last30         &lt;fct&gt; 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,…</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check class balance</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>df_model <span class="sc">%&gt;%</span> <span class="fu">count</span>(y_last30)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["y_last30"],"name":[1],"type":["fct"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"0","2":"2699"},{"1":"1","2":"1364"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="task-3-feature-construction" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="task-3-feature-construction"><span class="header-section-number">3</span> Task 3 — Feature construction</h2>
+<section id="what-features-we-will-use-written-explanation" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="what-features-we-will-use-written-explanation"><span class="header-section-number">3.1</span> What features we will use (written explanation)</h3>
+<p>We use a small set of <strong>aggregated, interpretable</strong> customer-level features (built from transaction history <em>before</em> the label window):</p>
+<ul>
+<li><p><strong><code>n_invoices</code> (frequency proxy):</strong> number of distinct invoices a customer has made.<br>
+Why useful: frequent shoppers are more likely to purchase again in a short window.</p></li>
+<li><p><strong><code>total_spend</code> (value proxy):</strong> total historical spend (Quantity × Price summed across transactions).<br>
+Why useful: higher-value customers may be more engaged and repeat more often.</p></li>
+<li><p><strong><code>recency_days</code> (recency proxy):</strong> days since the customer’s last purchase <strong>as of the label start date</strong>.<br>
+Why useful: customers who purchased recently are often more likely to purchase again soon.</p></li>
+</ul>
+<p>Other simple features included: - <strong><code>n_products</code></strong> (variety proxy), <strong><code>avg_item_price</code></strong>, <strong><code>avg_basket_value</code></strong>, <strong><code>active_span_days</code></strong>, and <strong><code>top_country</code></strong>.</p>
+<p><strong>Limitation / caveat:</strong> these features can be biased by the observation window (customers with short history can look “less valuable”), and missing Customer IDs are excluded (selection bias). Also, “top_country” may reflect logistics/data-entry quirks rather than behaviour.</p>
+</section>
+<section id="build-features-safely-avoid-leakage" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="build-features-safely-avoid-leakage"><span class="header-section-number">3.2</span> Build features safely (avoid leakage)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># --- IMPORTANT: avoid leakage ---</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Features must be calculated using data BEFORE the label window starts.</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Label uses the final 30 days of the dataset.</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ------------------------------------------------------------</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only rows with a Customer ID (needed for customer-level modelling)</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>df_purchases_id <span class="ot">&lt;-</span> df_purchases <span class="sc">%&gt;%</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>))</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define cutoff: last date in dataset</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>cutoff_date <span class="ot">&lt;-</span> <span class="fu">max</span>(df_purchases_id<span class="sc">$</span>InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co"># "Last 30 days" window for the label</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>label_window_days <span class="ot">&lt;-</span> <span class="dv">30</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>label_start <span class="ot">&lt;-</span> cutoff_date <span class="sc">-</span> <span class="fu">days</span>(label_window_days)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>cutoff_date</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2020-12-23 09:16:58 UTC"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>label_start</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "2020-11-23 09:16:58 UTC"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># History used for features (strictly BEFORE label_start)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>df_hist <span class="ot">&lt;-</span> df_purchases_id <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(InvoiceDate <span class="sc">&lt;</span> label_start)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Customer-level features (small, interpretable)</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>cust_features <span class="ot">&lt;-</span> df_hist <span class="sc">%&gt;%</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_invoices       =</span> <span class="fu">n_distinct</span>(Invoice),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_items          =</span> <span class="fu">n</span>(),                         <span class="co"># number of line-items</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_products       =</span> <span class="fu">n_distinct</span>(StockCode),</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">total_spend      =</span> <span class="fu">sum</span>(TotalPrice, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_item_price   =</span> <span class="fu">mean</span>(Price, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg_basket_value =</span> total_spend <span class="sc">/</span> n_invoices,</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">first_purchase   =</span> <span class="fu">min</span>(InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">last_purchase    =</span> <span class="fu">max</span>(InvoiceDate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">recency_days     =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(label_start, last_purchase, <span class="at">units =</span> <span class="st">"days"</span>)),</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">active_span_days =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(last_purchase, first_purchase, <span class="at">units =</span> <span class="st">"days"</span>)),</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">top_country      =</span> <span class="fu">names</span>(<span class="fu">sort</span>(<span class="fu">table</span>(Country), <span class="at">decreasing =</span> <span class="cn">TRUE</span>))[<span class="dv">1</span>],</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">top_country =</span> <span class="fu">as.factor</span>(top_country))</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Target label: did they buy in the last 30 days?</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>cust_label <span class="ot">&lt;-</span> df_purchases_id <span class="sc">%&gt;%</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(InvoiceDate <span class="sc">&gt;=</span> label_start) <span class="sc">%&gt;%</span></span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="st">`</span><span class="at">Customer ID</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">y_last30 =</span> <span class="dv">1</span>L, <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Customers not appearing in last 30 days are y=0</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>df_model <span class="ot">&lt;-</span> cust_features <span class="sc">%&gt;%</span></span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(cust_label, <span class="at">by =</span> <span class="st">"Customer ID"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">y_last30 =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(y_last30), <span class="dv">0</span>L, y_last30),</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">y_last30 =</span> <span class="fu">factor</span>(y_last30, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep features simple + numeric-friendly</span></span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>first_purchase, <span class="sc">-</span>last_purchase)</span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(df_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 4,063
+Columns: 11
+$ `Customer ID`    &lt;dbl&gt; 12346, 12347, 12348, 12349, 12352, 12353, 12355, 1235…
+$ n_invoices       &lt;int&gt; 6, 1, 1, 3, 1, 1, 1, 2, 2, 1, 4, 4, 3, 1, 1, 3, 3, 3,…
+$ n_items          &lt;int&gt; 28, 40, 20, 102, 6, 20, 22, 57, 165, 18, 83, 87, 19, …
+$ n_products       &lt;int&gt; 25, 40, 20, 90, 6, 20, 22, 53, 165, 17, 78, 74, 14, 3…
+$ total_spend      &lt;dbl&gt; 259.36, 611.53, 222.16, 2671.14, 143.75, 317.76, 488.…
+$ avg_item_price   &lt;dbl&gt; 6.691429, 1.834000, 0.719500, 8.581765, 2.075000, 1.9…
+$ avg_basket_value &lt;dbl&gt; 43.22667, 611.53000, 222.16000, 890.38000, 143.75000,…
+$ recency_days     &lt;dbl&gt; 147.960475, 22.960162, 56.959711, 25.964294, 10.96294…
+$ active_span_days &lt;dbl&gt; 1.760031e+02, 0.000000e+00, 0.000000e+00, 1.819966e+0…
+$ top_country      &lt;fct&gt; United Kingdom, Iceland, Finland, Italy, Norway, Bahr…
+$ y_last30         &lt;fct&gt; 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0,…</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check class balance</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>df_model <span class="sc">%&gt;%</span> <span class="fu">count</span>(y_last30)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["y_last30"],"name":[1],"type":["fct"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"0","2":"2699"},{"1":"1","2":"1364"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="task-4-train-tree-based-models" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="task-4-train-tree-based-models"><span class="header-section-number">4</span> Task 4 — Train tree-based models</h2>
+<p>We train three models using <strong>simple, defensible settings</strong> (no heavy tuning):</p>
+<ol type="1">
+<li>single decision tree<br>
+</li>
+<li>random forest<br>
+</li>
+<li>boosted tree model</li>
+</ol>
+<p><strong>Cleaning columns for modelling</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Make safe column names (needed for ranger formula interface)</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df_model <span class="ot">&lt;-</span> df_model <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span> <span class="fu">make.names</span>(.x, <span class="at">unique =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop identifier column if present (avoid "cheating"/overfitting)</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>df_model <span class="ot">&lt;-</span> df_model <span class="sc">%&gt;%</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">any_of</span>(<span class="st">"Customer.ID"</span>))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="trainvalidationtest-split-stratified" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="trainvalidationtest-split-stratified"><span class="header-section-number">4.1</span> Train/Validation/Test split (stratified)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 80% train+val, 20% test</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>split_1  <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(df_model, <span class="at">prop =</span> <span class="fl">0.80</span>, <span class="at">strata =</span> y_last30)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>trainval <span class="ot">&lt;-</span> <span class="fu">training</span>(split_1)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>test_df  <span class="ot">&lt;-</span> <span class="fu">testing</span>(split_1)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># From train+val: 75% train, 25% val  (overall 60/20/20)</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>split_2  <span class="ot">&lt;-</span> <span class="fu">initial_split</span>(trainval, <span class="at">prop =</span> <span class="fl">0.75</span>, <span class="at">strata =</span> y_last30)</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>train_df <span class="ot">&lt;-</span> <span class="fu">training</span>(split_2)</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>val_df   <span class="ot">&lt;-</span> <span class="fu">testing</span>(split_2)</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(train_df); <span class="fu">nrow</span>(val_df); <span class="fu">nrow</span>(test_df)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2437</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 813</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 813</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>train_df <span class="sc">%&gt;%</span> <span class="fu">count</span>(y_last30)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["y_last30"],"name":[1],"type":["fct"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"0","2":"1619"},{"1":"1","2":"818"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>val_df <span class="sc">%&gt;%</span> <span class="fu">count</span>(y_last30)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["y_last30"],"name":[1],"type":["fct"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"0","2":"540"},{"1":"1","2":"273"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>test_df <span class="sc">%&gt;%</span> <span class="fu">count</span>(y_last30)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["y_last30"],"name":[1],"type":["fct"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"0","2":"540"},{"1":"1","2":"273"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</section>
+<section id="helper-functions-for-evaluation-used-in-later-tasks" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="helper-functions-for-evaluation-used-in-later-tasks"><span class="header-section-number">4.2</span> Helper functions for evaluation (used in later tasks)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>metric_set_used <span class="ot">&lt;-</span> <span class="fu">metric_set</span>(accuracy, roc_auc, sens, spec)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>eval_classification <span class="ot">&lt;-</span> <span class="cf">function</span>(data, truth_col, prob_col, <span class="at">event_level =</span> <span class="st">"second"</span>) {</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">metric_set_used</span>(</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    data,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">truth =</span> {{truth_col}},</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">estimate =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>({{prob_col}} <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="st">"1"</span>, <span class="st">"0"</span>), <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"1"</span>)),</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.pred_1 =</span> {{prob_col}},</span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">event_level =</span> event_level</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>make_conf_mat <span class="ot">&lt;-</span> <span class="cf">function</span>(data, truth_col, prob_col) {</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  data <span class="sc">%&gt;%</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">.pred_class =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>({{prob_col}} <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="st">"1"</span>, <span class="st">"0"</span>), <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"1"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">conf_mat</span>(<span class="at">truth =</span> {{truth_col}}, <span class="at">estimate =</span> .pred_class)</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="model-1-single-decision-tree-rpart" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="model-1-single-decision-tree-rpart"><span class="header-section-number">4.3</span> Model 1 — Single decision tree (rpart)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>tree_fit <span class="ot">&lt;-</span> <span class="fu">rpart</span>(</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  y_last30 <span class="sc">~</span> .,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> train_df,</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">method =</span> <span class="st">"class"</span>,</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">control =</span> <span class="fu">rpart.control</span>(<span class="at">maxdepth =</span> <span class="dv">4</span>, <span class="at">minsplit =</span> <span class="dv">30</span>, <span class="at">cp =</span> <span class="fl">0.01</span>)</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a><span class="fu">rpart.plot</span>(tree_fit, <span class="at">type =</span> <span class="dv">2</span>, <span class="at">extra =</span> <span class="dv">104</span>, <span class="at">fallen.leaves =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="macierodgers-week3_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>train_tree <span class="ot">&lt;-</span> train_df <span class="sc">%&gt;%</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_tree =</span> <span class="fu">predict</span>(tree_fit, <span class="at">newdata =</span> train_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"1"</span>])</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>val_tree <span class="ot">&lt;-</span> val_df <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_tree =</span> <span class="fu">predict</span>(tree_fit, <span class="at">newdata =</span> val_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"1"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="model-2-random-forest-ranger" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="model-2-random-forest-ranger"><span class="header-section-number">4.4</span> Model 2 — Random forest (ranger)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>rf_fit <span class="ot">&lt;-</span> <span class="fu">ranger</span>(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  y_last30 <span class="sc">~</span> .,</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> train_df,</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">probability =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">num.trees =</span> <span class="dv">300</span>,</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">mtry =</span> <span class="fu">floor</span>(<span class="fu">sqrt</span>(<span class="fu">ncol</span>(train_df) <span class="sc">-</span> <span class="dv">1</span>)),</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">min.node.size =</span> <span class="dv">20</span>,</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">importance =</span> <span class="st">"impurity"</span>,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">seed =</span> <span class="dv">42</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>train_rf <span class="ot">&lt;-</span> train_df <span class="sc">%&gt;%</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_rf =</span> <span class="fu">predict</span>(rf_fit, <span class="at">data =</span> train_df)<span class="sc">$</span>predictions[, <span class="st">"1"</span>])</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>val_rf <span class="ot">&lt;-</span> val_df <span class="sc">%&gt;%</span></span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_rf =</span> <span class="fu">predict</span>(rf_fit, <span class="at">data =</span> val_df)<span class="sc">$</span>predictions[, <span class="st">"1"</span>])</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Variable importance (top 10)</span></span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>rf_fit<span class="sc">$</span>variable.importance <span class="sc">%&gt;%</span></span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sort</span>(<span class="at">decreasing =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      n_invoices      total_spend          n_items active_span_days 
+      105.276238       104.817472        88.795473        87.378747 
+    recency_days avg_basket_value   avg_item_price       n_products 
+       86.888677        77.487105        75.608047        66.199936 
+     top_country 
+        9.081284 </code></pre>
+</div>
+</div>
+</section>
+<section id="model-3-boosted-tree-model-gbm" class="level3" data-number="4.5">
+<h3 data-number="4.5" class="anchored" data-anchor-id="model-3-boosted-tree-model-gbm"><span class="header-section-number">4.5</span> Model 3 — Boosted tree model (gbm)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">"gbm"</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) <span class="fu">install.packages</span>(<span class="st">"gbm"</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gbm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loaded gbm 2.2.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>This version of gbm is no longer under development. Consider transitioning to gbm3, https://github.com/gbm-developers/gbm3</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare gbm inputs (y must be numeric 0/1)</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>prep_for_gbm <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">y_num =</span> <span class="fu">as.integer</span>(<span class="fu">as.character</span>(y_last30))) <span class="sc">%&gt;%</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span>y_last30)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a>train_gbm_in <span class="ot">&lt;-</span> <span class="fu">prep_for_gbm</span>(train_df)</span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>val_gbm_in   <span class="ot">&lt;-</span> <span class="fu">prep_for_gbm</span>(val_df)</span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Use TRAINING terms so val has identical dummy columns</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>gbm_terms <span class="ot">&lt;-</span> <span class="fu">terms</span>(y_num <span class="sc">~</span> . <span class="sc">-</span> <span class="dv">1</span>, <span class="at">data =</span> train_gbm_in)</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a>X_train <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(gbm_terms, <span class="at">data =</span> train_gbm_in)</span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>X_val   <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(gbm_terms, <span class="at">data =</span> val_gbm_in)</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>y_train <span class="ot">&lt;-</span> train_gbm_in<span class="sc">$</span>y_num</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>y_val   <span class="ot">&lt;-</span> val_gbm_in<span class="sc">$</span>y_num</span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>gbm_fit <span class="ot">&lt;-</span> <span class="fu">gbm.fit</span>(</span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> X_train,</span>
+<span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> y_train,</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">distribution =</span> <span class="st">"bernoulli"</span>,</span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.trees =</span> <span class="dv">600</span>,</span>
+<span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">interaction.depth =</span> <span class="dv">2</span>,</span>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">shrinkage =</span> <span class="fl">0.05</span>,</span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">n.minobsinnode =</span> <span class="dv">20</span>,</span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>  <span class="at">bag.fraction =</span> <span class="fl">0.7</span>,</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 13: top_countryBrazil has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 14: top_countryCanada has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 24: top_countryIsrael has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 31: top_countryNigeria has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 35: top_countryRSA has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 36: top_countrySingapore has no variation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in gbm.fit(x = X_train, y = y_train, distribution = "bernoulli", :
+variable 40: top_countryThailand has no variation.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>p_gbm_train <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbm_fit, <span class="at">newdata =</span> X_train, <span class="at">n.trees =</span> <span class="dv">600</span>, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>p_gbm_val   <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbm_fit, <span class="at">newdata =</span> X_val,   <span class="at">n.trees =</span> <span class="dv">600</span>, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>train_gbm <span class="ot">&lt;-</span> train_df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">p_gbm =</span> p_gbm_train)</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>val_gbm   <span class="ot">&lt;-</span> val_df   <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">p_gbm =</span> p_gbm_val)</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Variable influence (top 10)</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gbm_fit, <span class="at">plotit =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["var"],"name":[1],"type":["chr"],"align":["left"]},{"label":["rel.inf"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"n_invoices","2":"35.25892832","_rn_":"n_invoices"},{"1":"avg_basket_value","2":"10.66782976","_rn_":"avg_basket_value"},{"1":"avg_item_price","2":"10.58626371","_rn_":"avg_item_price"},{"1":"n_items","2":"10.22517033","_rn_":"n_items"},{"1":"active_span_days","2":"9.72690413","_rn_":"active_span_days"},{"1":"recency_days","2":"9.72230091","_rn_":"recency_days"},{"1":"total_spend","2":"7.86892485","_rn_":"total_spend"},{"1":"n_products","2":"5.53231374","_rn_":"n_products"},{"1":"top_countryUnited Kingdom","2":"0.31457571","_rn_":"top_countryUnited Kingdom"},{"1":"top_countryGermany","2":"0.09678853","_rn_":"top_countryGermany"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="task-5-evaluate-models-on-validation-set-comparison" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="task-5-evaluate-models-on-validation-set-comparison"><span class="header-section-number">5</span> Task 5 — Evaluate models on validation set (comparison)</h2>
+<p>We compare models using <strong>ROC AUC</strong> (threshold-free) plus <strong>accuracy, sensitivity, specificity</strong> at a 0.5 threshold.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1) Add prediction columns (prob + class)</span></span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>add_pred_cols <span class="ot">&lt;-</span> <span class="cf">function</span>(df, prob_col) {</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_1 =</span> {{ prob_col }},</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_0 =</span> <span class="dv">1</span> <span class="sc">-</span> .pred_1,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_class =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>(.pred_1 <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="st">"1"</span>, <span class="st">"0"</span>), <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"1"</span>))</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>val_tree_p <span class="ot">&lt;-</span> <span class="fu">add_pred_cols</span>(val_tree, p_tree)</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>val_rf_p   <span class="ot">&lt;-</span> <span class="fu">add_pred_cols</span>(val_rf,   p_rf)</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>val_gbm_p  <span class="ot">&lt;-</span> <span class="fu">add_pred_cols</span>(val_gbm,  p_gbm)</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 2) Metrics (explicit calls; avoids metric_set() issues)</span></span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>get_metrics <span class="ot">&lt;-</span> <span class="cf">function</span>(df, model_name) {</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">accuracy</span>(df, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class),</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sens</span>(df, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class, <span class="at">event_level =</span> <span class="st">"second"</span>),</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">spec</span>(df, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class, <span class="at">event_level =</span> <span class="st">"second"</span>),</span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">roc_auc</span>(df, <span class="at">truth =</span> y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>)</span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">model =</span> model_name) <span class="sc">%&gt;%</span></span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(model, .metric, .estimate)</span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a>val_results <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb49-28"><a href="#cb49-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_metrics</span>(val_tree_p, <span class="st">"Decision tree"</span>),</span>
+<span id="cb49-29"><a href="#cb49-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_metrics</span>(val_rf_p,   <span class="st">"Random forest"</span>),</span>
+<span id="cb49-30"><a href="#cb49-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">get_metrics</span>(val_gbm_p,  <span class="st">"Boosted (gbm)"</span>)</span>
+<span id="cb49-31"><a href="#cb49-31" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(.metric, <span class="fu">desc</span>(.estimate), model)</span>
+<span id="cb49-33"><a href="#cb49-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-34"><a href="#cb49-34" aria-hidden="true" tabindex="-1"></a>val_results</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":[".metric"],"name":[2],"type":["chr"],"align":["left"]},{"label":[".estimate"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Decision tree","2":"accuracy","3":"0.7404674"},{"1":"Random forest","2":"accuracy","3":"0.7318573"},{"1":"Boosted (gbm)","2":"accuracy","3":"0.7306273"},{"1":"Boosted (gbm)","2":"roc_auc","3":"0.7424027"},{"1":"Random forest","2":"roc_auc","3":"0.7240809"},{"1":"Decision tree","2":"roc_auc","3":"0.6778490"},{"1":"Decision tree","2":"sens","3":"0.4871795"},{"1":"Boosted (gbm)","2":"sens","3":"0.4505495"},{"1":"Random forest","2":"sens","3":"0.4358974"},{"1":"Random forest","2":"spec","3":"0.8814815"},{"1":"Boosted (gbm)","2":"spec","3":"0.8722222"},{"1":"Decision tree","2":"spec","3":"0.8685185"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3) Choose best model by validation ROC AUC</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>val_auc <span class="ot">&lt;-</span> val_results <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(.metric <span class="sc">==</span> <span class="st">"roc_auc"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(.estimate))</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>val_auc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":[".metric"],"name":[2],"type":["chr"],"align":["left"]},{"label":[".estimate"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Boosted (gbm)","2":"roc_auc","3":"0.7424027"},{"1":"Random forest","2":"roc_auc","3":"0.7240809"},{"1":"Decision tree","2":"roc_auc","3":"0.6778490"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>best_model <span class="ot">&lt;-</span> val_auc<span class="sc">$</span>model[<span class="dv">1</span>]</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>best_model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Boosted (gbm)"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 4) Confusion matrices (validation)</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">conf_mat</span>(val_tree_p, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Truth
+Prediction   0   1
+         0 469 140
+         1  71 133</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">conf_mat</span>(val_rf_p,   <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Truth
+Prediction   0   1
+         0 476 154
+         1  64 119</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">conf_mat</span>(val_gbm_p,  <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Truth
+Prediction   0   1
+         0 471 150
+         1  69 123</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 5) ROC curves (validation)</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>roc_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(val_tree_p, y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Decision tree"</span>),</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(val_rf_p,   y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Random forest"</span>),</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_curve</span>(val_gbm_p,  y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Boosted (gbm)"</span>)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roc_df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span> <span class="sc">-</span> specificity, <span class="at">y =</span> sensitivity, <span class="at">color =</span> model)) <span class="sc">+</span></span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Validation ROC curves"</span>,</span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"False Positive Rate (1 - Specificity)"</span>,</span>
+<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"True Positive Rate (Sensitivity)"</span></span>
+<span id="cb59-15"><a href="#cb59-15" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="macierodgers-week3_files/figure-html/task5-validation-results-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="task-6-final-evaluation-on-the-test-set-conclusion" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="task-6-final-evaluation-on-the-test-set-conclusion"><span class="header-section-number">6</span> Task 6 — Final evaluation on the test set + conclusion</h2>
+<section id="aim" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="aim"><span class="header-section-number">6.1</span> Aim</h3>
+<p>We now take the <strong>best model chosen on the validation set</strong> (highest validation ROC AUC) and evaluate it once on the <strong>held-out test set</strong>.<br>
+This gives an unbiased estimate of performance on new customers (given our feature/label setup).</p>
+</section>
+<section id="test-set-evaluation-best-model-only" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="test-set-evaluation-best-model-only"><span class="header-section-number">6.2</span> Test-set evaluation (best model only)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper to add prediction columns (same idea as Task 5)</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>add_pred_cols <span class="ot">&lt;-</span> <span class="cf">function</span>(df, prob_vec) {</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_1 =</span> prob_vec,</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_0 =</span> <span class="dv">1</span> <span class="sc">-</span> .pred_1,</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>      <span class="at">.pred_class =</span> <span class="fu">factor</span>(<span class="fu">if_else</span>(.pred_1 <span class="sc">&gt;=</span> <span class="fl">0.5</span>, <span class="st">"1"</span>, <span class="st">"0"</span>), <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"0"</span>,<span class="st">"1"</span>))</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Create test predictions for each model</span></span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Decision tree</span></span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>test_tree <span class="ot">&lt;-</span> test_df <span class="sc">%&gt;%</span></span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_tree =</span> <span class="fu">predict</span>(tree_fit, <span class="at">newdata =</span> test_df, <span class="at">type =</span> <span class="st">"prob"</span>)[, <span class="st">"1"</span>])</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Random forest</span></span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a>test_rf <span class="ot">&lt;-</span> test_df <span class="sc">%&gt;%</span></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">p_rf =</span> <span class="fu">predict</span>(rf_fit, <span class="at">data =</span> test_df)<span class="sc">$</span>predictions[, <span class="st">"1"</span>])</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Boosted (gbm): must use the same design-matrix terms as training</span></span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>test_gbm_in <span class="ot">&lt;-</span> test_df <span class="sc">%&gt;%</span></span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">y_num =</span> <span class="fu">as.integer</span>(<span class="fu">as.character</span>(y_last30))) <span class="sc">%&gt;%</span>   <span class="co"># y not used for prediction, but keeps structure consistent</span></span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>y_last30)</span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a>X_test <span class="ot">&lt;-</span> <span class="fu">model.matrix</span>(gbm_terms, <span class="at">data =</span> test_gbm_in)</span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a>p_gbm_test <span class="ot">&lt;-</span> <span class="fu">predict</span>(gbm_fit, <span class="at">newdata =</span> X_test, <span class="at">n.trees =</span> <span class="dv">600</span>, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a>test_gbm <span class="ot">&lt;-</span> test_df <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">p_gbm =</span> p_gbm_test)</span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose the best model from validation</span></span>
+<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a>best_model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Boosted (gbm)"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build the "best" test dataframe with unified .pred_1 / .pred_class</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>test_best <span class="ot">&lt;-</span> <span class="cf">if</span> (best_model <span class="sc">==</span> <span class="st">"Decision tree"</span>) {</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_pred_cols</span>(test_tree, test_tree<span class="sc">$</span>p_tree) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Decision tree"</span>)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="cf">if</span> (best_model <span class="sc">==</span> <span class="st">"Random forest"</span>) {</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_pred_cols</span>(test_rf, test_rf<span class="sc">$</span>p_rf) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Random forest"</span>)</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_pred_cols</span>(test_gbm, test_gbm<span class="sc">$</span>p_gbm) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"Boosted (gbm)"</span>)</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Metrics on test set (best model only)</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>test_metrics <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">accuracy</span>(test_best, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class),</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sens</span>(test_best, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class, <span class="at">event_level =</span> <span class="st">"second"</span>),</span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spec</span>(test_best, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class, <span class="at">event_level =</span> <span class="st">"second"</span>),</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">roc_auc</span>(test_best, <span class="at">truth =</span> y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>)</span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">model =</span> best_model) <span class="sc">%&gt;%</span></span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(model, .metric, .estimate)</span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a>test_metrics</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div data-pagedtable="false">
+  <script data-pagedtable-source="" type="application/json">
+{"columns":[{"label":["model"],"name":[1],"type":["chr"],"align":["left"]},{"label":[".metric"],"name":[2],"type":["chr"],"align":["left"]},{"label":[".estimate"],"name":[3],"type":["dbl"],"align":["right"]}],"data":[{"1":"Boosted (gbm)","2":"accuracy","3":"0.7121771"},{"1":"Boosted (gbm)","2":"sens","3":"0.3809524"},{"1":"Boosted (gbm)","2":"spec","3":"0.8796296"},{"1":"Boosted (gbm)","2":"roc_auc","3":"0.6892348"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Confusion matrix (test)</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">conf_mat</span>(test_best, <span class="at">truth =</span> y_last30, <span class="at">estimate =</span> .pred_class)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          Truth
+Prediction   0   1
+         0 475 169
+         1  65 104</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ROC curve (test)</span></span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>roc_test <span class="ot">&lt;-</span> <span class="fu">roc_curve</span>(test_best, y_last30, .pred_1, <span class="at">event_level =</span> <span class="st">"second"</span>)</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(roc_test, <span class="fu">aes</span>(<span class="at">x =</span> <span class="dv">1</span> <span class="sc">-</span> specificity, <span class="at">y =</span> sensitivity)) <span class="sc">+</span></span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb65-8"><a href="#cb65-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Test ROC curve —"</span>, best_model),</span>
+<span id="cb65-9"><a href="#cb65-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"False Positive Rate (1 - Specificity)"</span>,</span>
+<span id="cb65-10"><a href="#cb65-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"True Positive Rate (Sensitivity)"</span></span>
+<span id="cb65-11"><a href="#cb65-11" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="macierodgers-week3_files/figure-html/task6-test-evaluation-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">7</span> Conclusion</h2>
+<p>Based on <strong>validation ROC AUC</strong>, the selected model was Boosted (gbm).</p>
+<p>On the <strong>test set</strong>, the model achieved the following key results (from the table above):</p>
+<p><strong>ROC AUC:</strong> 0.689</p>
+<p><strong>Accuracy:</strong> 0.712</p>
+<p><strong>Sensitivity (TPR):</strong>0.381</p>
+<p><strong>Specificity (TNR):</strong> 0.88</p>
+<p>Overall, performance is reasonable for a simple tree-based baseline using interpretable customer features.</p>
+</section>
+<section id="critical-reflection-limitations" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="critical-reflection-limitations"><span class="header-section-number">8</span> Critical reflection / limitations</h2>
+<p><strong>Target choice:</strong> Using “purchase activity in the final 30 days” as the outcome is a practical way to represent recent engagement, but the length of this window is subjective. A different time horizon could lead to a different class balance and potentially different model conclusions.</p>
+<p><strong>Selection bias:</strong> Transactions without a recorded Customer ID are excluded from the analysis. This may bias the results toward more identifiable or repeat customers and under-represent occasional or anonymous purchasers.</p>
+<p><strong>Temporal framing:</strong> Feature construction was restricted to transactions occurring before the prediction window in order to avoid data leakage. However, the dataset captures behaviour from a single time period, meaning the results may not generalise well to other seasons or years with different purchasing patterns.</p>
+<p><strong>Threshold choice:</strong> Metrics such as accuracy, sensitivity, and specificity are calculated using a fixed probability threshold of 0.5. In practice, this threshold would likely be adjusted based on the relative costs of false positives versus false negatives, which could change model performance assessments.</p>
+</section>
+<section id="next-steps" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">9</span> Next steps</h2>
+<p>Further analysis could examine alternative prediction windows (for example, 14, 60, or 90 days), incorporate additional customer-level features such as tenure or engagement trends, and apply time-based validation or cross-validation to better assess model robustness and generalisation.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

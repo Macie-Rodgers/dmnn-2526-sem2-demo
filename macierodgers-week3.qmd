@@ -1,169 +1,556 @@
 ---
 title: "macierodgers-week3"
-format: html
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    df-print: paged
+editor: source
 ---
-## Task 1 — Modelling dataset
 
-#| label: load-data
+Setup
 
-# This dataset uses semicolons as separators.
-bank <- read.csv("bank-additional.csv", sep = ";")
+```{r}
+library(tidyverse)
+library(lubridate)
+library(here)
 
-glimpse(bank)
+# modelling + evaluation
+library(rsample)
+library(rpart)
+library(rpart.plot)
+library(yardstick)
 
-# Check target distribution
-bank %>% count(y) %>% mutate(prop = n / sum(n))
+# alternative model
+library(ranger)
 
-## Task 2 — Target variable
+set.seed(42)
+```
 
-#| label: target
+## Task 1 - Unit of analysis + model-ready dataset
 
-# Ensure y is a factor with consistent ordering
-bank <- bank %>%
-  mutate(y = factor(y, levels = c("no", "yes")))
+### Decision (from Week 1)
 
-levels(bank$y)
+**Unit of analysis (modelling stage):** customer-level (one row per customer).\
+**Key cleaning decisions:** keep a “purchases only” dataset by removing cancellations/returns and invalid values (negative/zero Quantity or Price).
 
-## Task 3 — Feature selection
+### Written explanation (required)
 
-#| label: select-features
+At modelling time, one row represents a single customer snapshot at a chosen cutoff date, summarising their past behaviour (e.g., how recently they bought, how often they buy, and how much they spend). This makes sense for tree-based models because trees handle nonlinear thresholds (e.g., “if recency \> 60 days then…”), interactions, and mixed feature types (numeric + categorical like Country). A limitation is that customers with missing IDs are excluded, which can bias results if those customers behave differently.
 
-# Minimal, interpretable feature set (you can add/remove a few, but keep it small)
-keep_features <- c(
-  "y",
-  "age", "job", "marital", "education", "default", "housing", "loan",
-  "contact", "month", "day_of_week",
-  "duration",
-  "campaign", "pdays", "previous", "poutcome",
-  "emp.var.rate", "cons.price.idx", "cons.conf.idx", "euribor3m", "nr.employed"
-)
+### Load + minimal cleaning
 
-df <- bank %>% select(any_of(keep_features))
+```{r load-clean, message=FALSE, warning=FALSE}
+df_raw <- readr::read_csv(here("data", "raw", "online_retail_II(4).csv"), show_col_types = FALSE)
 
-glimpse(df)
+df1 <- df_raw %>%
+  mutate(
+    InvoiceDate = dmy_hms(InvoiceDate),
+    TotalPrice  = Quantity * Price,
+    is_cancel   = str_starts(Invoice, "C")
+  )
 
-## Task 4 — Models
+# Purchases only dataset
+df_purchases <- df1 %>%
+  filter(!is_cancel, Quantity > 0, Price > 0) %>%
+  filter(!is.na(InvoiceDate))
 
-#| label: split
+glimpse(df_purchases)
+```
 
-# 70/15/15 split (train/validation/test) using two-step split
-split_1 <- initial_split(df, prop = 0.85, strata = y)
-train_val <- training(split_1)
-test_data <- testing(split_1)
+------------------------------------------------------------------------
 
-split_2 <- initial_split(train_val, prop = 0.8235, strata = y) # ~70% total train
-train_data <- training(split_2)
-val_data <- testing(split_2)
+## Task 2 - Customer-level dataset for modelling
 
-c(train = nrow(train_data), validation = nrow(val_data), test = nrow(test_data))
+### Aim (what we are predicting)
 
-#| label: recipe
+We create **one row per customer** (customer-level features) and define a simple binary target:
 
-rec <- recipe(y ~ ., data = train_data) %>%
-  step_unknown(all_nominal_predictors()) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors()) %>%
-  step_impute_median(all_numeric_predictors())
+**Purchased in the last 30 days of the dataset** (1 = yes, 0 = no).
 
-rec
+This is a **classification** task.
 
-#| label: specs
+### Target definition (critical thinking)
 
-tree_spec <- decision_tree(
-  tree_depth = 5,
-  min_n = 50
-) %>%
-  set_engine("rpart") %>%
-  set_mode("classification")
+**Target = 1** if a customer made at least one purchase in the final 30 days of the dataset.\
+**Assumption:** behaviour in the final 30 days is a meaningful proxy for “recent activity”.
 
-rf_spec <- rand_forest(
-  trees = 500,
-  mtry = 6,
-  min_n = 20
-) %>%
-  set_engine("ranger", importance = "impurity") %>%
-  set_mode("classification")
+**Risk/ambiguity:** customers with missing Customer IDs are excluded, and the “last 30 days” window is arbitrary (other windows could change results).
 
-boost_spec <- boost_tree(
-  trees = 600,
-  tree_depth = 3,
-  learn_rate = 0.05,
-  mtry = 6,
-  min_n = 20,
-  loss_reduction = 0
-) %>%
-  set_engine("xgboost") %>%
-  set_mode("classification")
+```{r customer-table, message=FALSE, warning=FALSE}
+# Keep only rows with a Customer ID (needed for customer-level modelling)
+df_purchases_id <- df_purchases %>%
+  filter(!is.na(`Customer ID`))
 
-#| label: fit
+# Define cutoff and the last-30-days label window
+cutoff_date <- max(df_purchases_id$InvoiceDate, na.rm = TRUE)
+label_window_days <- 30
+label_start <- cutoff_date - days(label_window_days)
 
-wf_tree <- workflow() %>% add_recipe(rec) %>% add_model(tree_spec)
-wf_rf   <- workflow() %>% add_recipe(rec) %>% add_model(rf_spec)
-wf_gb   <- workflow() %>% add_recipe(rec) %>% add_model(boost_spec)
+cutoff_date
+label_start
 
-fit_tree <- fit(wf_tree, data = train_data)
-fit_rf   <- fit(wf_rf,   data = train_data)
-fit_gb   <- fit(wf_gb,   data = train_data)
+# IMPORTANT: avoid leakage
+# Features should come from BEFORE the label window
+df_hist <- df_purchases_id %>%
+  filter(InvoiceDate < label_start)
 
-## Task 5 — Model comparison
+# Customer-level features (interpretable)
+cust_features <- df_hist %>%
+  group_by(`Customer ID`) %>%
+  summarise(
+    n_invoices = n_distinct(Invoice),
+    n_items    = n(),  # number of line-items
+    n_products = n_distinct(StockCode),
+    total_spend = sum(TotalPrice, na.rm = TRUE),
+    avg_item_price = mean(Price, na.rm = TRUE),
+    avg_basket_value = total_spend / n_invoices,
+    first_purchase = min(InvoiceDate, na.rm = TRUE),
+    last_purchase  = max(InvoiceDate, na.rm = TRUE),
+    recency_days = as.numeric(difftime(label_start, last_purchase, units = "days")),
+    active_span_days = as.numeric(difftime(last_purchase, first_purchase, units = "days")),
+    top_country = names(sort(table(Country), decreasing = TRUE))[1],
+    .groups = "drop"
+  ) %>%
+  mutate(top_country = as.factor(top_country))
 
-#| label: metrics
+# Target label: did they buy in the last 30 days?
+cust_label <- df_purchases_id %>%
+  filter(InvoiceDate >= label_start) %>%
+  group_by(`Customer ID`) %>%
+  summarise(y_last30 = 1L, .groups = "drop")
 
-met <- metric_set(accuracy, roc_auc)
+# Customers not appearing in last 30 days are y=0
+df_model <- cust_features %>%
+  left_join(cust_label, by = "Customer ID") %>%
+  mutate(y_last30 = if_else(is.na(y_last30), 0L, y_last30),
+         y_last30 = factor(y_last30, levels = c(0,1))) %>%
+  select(-first_purchase, -last_purchase)  # keep features simple + numeric-friendly
 
-eval_classification <- function(fit_obj, data, model_name) {
-  p_class <- predict(fit_obj, data, type = "class")
-  p_prob  <- predict(fit_obj, data, type = "prob")
+glimpse(df_model)
 
-  out <- bind_cols(data %>% select(y), p_class, p_prob) %>%
-    met(truth = y, estimate = .pred_class, .pred_yes) %>%
-    mutate(model = model_name)
+# Check class balance
+df_model %>% count(y_last30)
+```
 
-  out
+## Task 3 — Feature construction
+
+### What features we will use (written explanation)
+
+We use a small set of **aggregated, interpretable** customer-level features (built from transaction history *before* the label window):
+
+-   **`n_invoices` (frequency proxy):** number of distinct invoices a customer has made.\
+    Why useful: frequent shoppers are more likely to purchase again in a short window.
+
+-   **`total_spend` (value proxy):** total historical spend (Quantity × Price summed across transactions).\
+    Why useful: higher-value customers may be more engaged and repeat more often.
+
+-   **`recency_days` (recency proxy):** days since the customer’s last purchase **as of the label start date**.\
+    Why useful: customers who purchased recently are often more likely to purchase again soon.
+
+Other simple features included: - **`n_products`** (variety proxy), **`avg_item_price`**, **`avg_basket_value`**, **`active_span_days`**, and **`top_country`**.
+
+**Limitation / caveat:** these features can be biased by the observation window (customers with short history can look “less valuable”), and missing Customer IDs are excluded (selection bias). Also, “top_country” may reflect logistics/data-entry quirks rather than behaviour.
+
+### Build features safely (avoid leakage)
+
+```{r task3-features, message=FALSE, warning=FALSE}
+# --- IMPORTANT: avoid leakage ---
+# Features must be calculated using data BEFORE the label window starts.
+# Label uses the final 30 days of the dataset.
+# ------------------------------------------------------------
+
+# Keep only rows with a Customer ID (needed for customer-level modelling)
+df_purchases_id <- df_purchases %>%
+  filter(!is.na(`Customer ID`))
+
+# Define cutoff: last date in dataset
+cutoff_date <- max(df_purchases_id$InvoiceDate, na.rm = TRUE)
+
+# "Last 30 days" window for the label
+label_window_days <- 30
+label_start <- cutoff_date - days(label_window_days)
+
+cutoff_date
+label_start
+
+# History used for features (strictly BEFORE label_start)
+df_hist <- df_purchases_id %>%
+  filter(InvoiceDate < label_start)
+
+# Customer-level features (small, interpretable)
+cust_features <- df_hist %>%
+  group_by(`Customer ID`) %>%
+  summarise(
+    n_invoices       = n_distinct(Invoice),
+    n_items          = n(),                         # number of line-items
+    n_products       = n_distinct(StockCode),
+    total_spend      = sum(TotalPrice, na.rm = TRUE),
+    avg_item_price   = mean(Price, na.rm = TRUE),
+    avg_basket_value = total_spend / n_invoices,
+    first_purchase   = min(InvoiceDate, na.rm = TRUE),
+    last_purchase    = max(InvoiceDate, na.rm = TRUE),
+    recency_days     = as.numeric(difftime(label_start, last_purchase, units = "days")),
+    active_span_days = as.numeric(difftime(last_purchase, first_purchase, units = "days")),
+    top_country      = names(sort(table(Country), decreasing = TRUE))[1],
+    .groups = "drop"
+  ) %>%
+  mutate(top_country = as.factor(top_country))
+
+# Target label: did they buy in the last 30 days?
+cust_label <- df_purchases_id %>%
+  filter(InvoiceDate >= label_start) %>%
+  group_by(`Customer ID`) %>%
+  summarise(y_last30 = 1L, .groups = "drop")
+
+# Customers not appearing in last 30 days are y=0
+df_model <- cust_features %>%
+  left_join(cust_label, by = "Customer ID") %>%
+  mutate(
+    y_last30 = if_else(is.na(y_last30), 0L, y_last30),
+    y_last30 = factor(y_last30, levels = c(0, 1))
+  ) %>%
+  # Keep features simple + numeric-friendly
+  select(-first_purchase, -last_purchase)
+
+glimpse(df_model)
+
+# Check class balance
+df_model %>% count(y_last30)
+```
+
+## Task 4 — Train tree-based models
+
+We train three models using **simple, defensible settings** (no heavy tuning):
+
+1.  single decision tree\
+2.  random forest\
+3.  boosted tree model
+
+**Cleaning columns for modelling**
+
+```{r task4-split-and-fit, message=FALSE, warning=FALSE}
+# Make safe column names (needed for ranger formula interface)
+df_model <- df_model %>%
+  rename_with(~ make.names(.x, unique = TRUE))
+
+# Drop identifier column if present (avoid "cheating"/overfitting)
+df_model <- df_model %>%
+  select(-any_of("Customer.ID"))
+
+set.seed(42)
+```
+
+### Train/Validation/Test split (stratified)
+
+```{r}
+# 80% train+val, 20% test
+split_1  <- initial_split(df_model, prop = 0.80, strata = y_last30)
+trainval <- training(split_1)
+test_df  <- testing(split_1)
+
+# From train+val: 75% train, 25% val  (overall 60/20/20)
+split_2  <- initial_split(trainval, prop = 0.75, strata = y_last30)
+train_df <- training(split_2)
+val_df   <- testing(split_2)
+
+nrow(train_df); nrow(val_df); nrow(test_df)
+train_df %>% count(y_last30)
+val_df %>% count(y_last30)
+test_df %>% count(y_last30)
+```
+
+### Helper functions for evaluation (used in later tasks)
+
+```{r}
+metric_set_used <- metric_set(accuracy, roc_auc, sens, spec)
+
+eval_classification <- function(data, truth_col, prob_col, event_level = "second") {
+  metric_set_used(
+    data,
+    truth = {{truth_col}},
+    estimate = factor(if_else({{prob_col}} >= 0.5, "1", "0"), levels = c("0","1")),
+    .pred_1 = {{prob_col}},
+    event_level = event_level
+  )
 }
 
-#| label: train-vs-val
+make_conf_mat <- function(data, truth_col, prob_col) {
+  data %>%
+    mutate(.pred_class = factor(if_else({{prob_col}} >= 0.5, "1", "0"), levels = c("0","1"))) %>%
+    conf_mat(truth = {{truth_col}}, estimate = .pred_class)
+}
+```
 
-train_results <- bind_rows(
-  eval_classification(fit_tree, train_data, "Decision tree"),
-  eval_classification(fit_rf,   train_data, "Random forest"),
-  eval_classification(fit_gb,   train_data, "Boosted tree")
-) %>%
-  mutate(split = "train")
+### Model 1 — Single decision tree (rpart)
 
-val_results <- bind_rows(
-  eval_classification(fit_tree, val_data, "Decision tree"),
-  eval_classification(fit_rf,   val_data, "Random forest"),
-  eval_classification(fit_gb,   val_data, "Boosted tree")
-) %>%
-  mutate(split = "validation")
-
-bind_rows(train_results, val_results) %>%
-  arrange(.metric, model, split)
-
-## Task 6 — Final evaluation
-
-#| label: test-eval
-
-test_results <- bind_rows(
-  eval_classification(fit_tree, test_data, "Decision tree"),
-  eval_classification(fit_rf,   test_data, "Random forest"),
-  eval_classification(fit_gb,   test_data, "Boosted tree")
+```{r}
+tree_fit <- rpart(
+  y_last30 ~ .,
+  data = train_df,
+  method = "class",
+  control = rpart.control(maxdepth = 4, minsplit = 30, cp = 0.01)
 )
 
-test_results %>% arrange(.metric, desc(.estimate))
+rpart.plot(tree_fit, type = 2, extra = 104, fallen.leaves = TRUE)
 
-#| label: tree-plot
-fit_tree %>%
-  extract_fit_parsnip() %>%
-  rpart.plot(type = 2, extra = 104, roundint = FALSE)
+train_tree <- train_df %>%
+  mutate(p_tree = predict(tree_fit, newdata = train_df, type = "prob")[, "1"])
 
-#| label: rf-importance
-rf_engine <- extract_fit_engine(fit_rf)
+val_tree <- val_df %>%
+  mutate(p_tree = predict(tree_fit, newdata = val_df, type = "prob")[, "1"])
+```
 
-tibble(
-  variable = names(rf_engine$variable.importance),
-  importance = as.numeric(rf_engine$variable.importance)
+### Model 2 — Random forest (ranger)
+
+```{r}
+rf_fit <- ranger(
+  y_last30 ~ .,
+  data = train_df,
+  probability = TRUE,
+  num.trees = 300,
+  mtry = floor(sqrt(ncol(train_df) - 1)),
+  min.node.size = 20,
+  importance = "impurity",
+  seed = 42
+)
+
+train_rf <- train_df %>%
+  mutate(p_rf = predict(rf_fit, data = train_df)$predictions[, "1"])
+
+val_rf <- val_df %>%
+  mutate(p_rf = predict(rf_fit, data = val_df)$predictions[, "1"])
+
+# Variable importance (top 10)
+rf_fit$variable.importance %>%
+  sort(decreasing = TRUE) %>%
+  head(10)
+```
+
+### Model 3 — Boosted tree model (gbm)
+
+```{r}
+if (!requireNamespace("gbm", quietly = TRUE)) install.packages("gbm")
+library(gbm)
+
+# Prepare gbm inputs (y must be numeric 0/1)
+prep_for_gbm <- function(df) {
+  df %>%
+    mutate(y_num = as.integer(as.character(y_last30))) %>%
+    select(-y_last30)
+}
+
+train_gbm_in <- prep_for_gbm(train_df)
+val_gbm_in   <- prep_for_gbm(val_df)
+
+# Use TRAINING terms so val has identical dummy columns
+gbm_terms <- terms(y_num ~ . - 1, data = train_gbm_in)
+
+X_train <- model.matrix(gbm_terms, data = train_gbm_in)
+X_val   <- model.matrix(gbm_terms, data = val_gbm_in)
+
+y_train <- train_gbm_in$y_num
+y_val   <- val_gbm_in$y_num
+
+gbm_fit <- gbm.fit(
+  x = X_train,
+  y = y_train,
+  distribution = "bernoulli",
+  n.trees = 600,
+  interaction.depth = 2,
+  shrinkage = 0.05,
+  n.minobsinnode = 20,
+  bag.fraction = 0.7,
+  verbose = FALSE
+)
+
+p_gbm_train <- predict(gbm_fit, newdata = X_train, n.trees = 600, type = "response")
+p_gbm_val   <- predict(gbm_fit, newdata = X_val,   n.trees = 600, type = "response")
+
+train_gbm <- train_df %>% mutate(p_gbm = p_gbm_train)
+val_gbm   <- val_df   %>% mutate(p_gbm = p_gbm_val)
+
+# Variable influence (top 10)
+summary(gbm_fit, plotit = FALSE) %>% head(10)
+```
+
+## Task 5 — Evaluate models on validation set (comparison)
+
+We compare models using **ROC AUC** (threshold-free) plus **accuracy, sensitivity, specificity** at a 0.5 threshold.
+
+```{r task5-validation-results, message=FALSE, warning=FALSE}
+# 1) Add prediction columns (prob + class)
+add_pred_cols <- function(df, prob_col) {
+  df %>%
+    mutate(
+      .pred_1 = {{ prob_col }},
+      .pred_0 = 1 - .pred_1,
+      .pred_class = factor(if_else(.pred_1 >= 0.5, "1", "0"), levels = c("0","1"))
+    )
+}
+
+val_tree_p <- add_pred_cols(val_tree, p_tree)
+val_rf_p   <- add_pred_cols(val_rf,   p_rf)
+val_gbm_p  <- add_pred_cols(val_gbm,  p_gbm)
+
+# 2) Metrics (explicit calls; avoids metric_set() issues)
+get_metrics <- function(df, model_name) {
+  bind_rows(
+    accuracy(df, truth = y_last30, estimate = .pred_class),
+    sens(df, truth = y_last30, estimate = .pred_class, event_level = "second"),
+    spec(df, truth = y_last30, estimate = .pred_class, event_level = "second"),
+    roc_auc(df, truth = y_last30, .pred_1, event_level = "second")
+  ) %>%
+    mutate(model = model_name) %>%
+    select(model, .metric, .estimate)
+}
+
+val_results <- bind_rows(
+  get_metrics(val_tree_p, "Decision tree"),
+  get_metrics(val_rf_p,   "Random forest"),
+  get_metrics(val_gbm_p,  "Boosted (gbm)")
 ) %>%
-  arrange(desc(importance)) %>%
-  slice_head(n = 15)
+  arrange(.metric, desc(.estimate), model)
+
+val_results
+
+# 3) Choose best model by validation ROC AUC
+val_auc <- val_results %>%
+  filter(.metric == "roc_auc") %>%
+  arrange(desc(.estimate))
+
+val_auc
+
+best_model <- val_auc$model[1]
+best_model
+
+# 4) Confusion matrices (validation)
+conf_mat(val_tree_p, truth = y_last30, estimate = .pred_class)
+conf_mat(val_rf_p,   truth = y_last30, estimate = .pred_class)
+conf_mat(val_gbm_p,  truth = y_last30, estimate = .pred_class)
+
+# 5) ROC curves (validation)
+roc_df <- bind_rows(
+  roc_curve(val_tree_p, y_last30, .pred_1, event_level = "second") %>% mutate(model = "Decision tree"),
+  roc_curve(val_rf_p,   y_last30, .pred_1, event_level = "second") %>% mutate(model = "Random forest"),
+  roc_curve(val_gbm_p,  y_last30, .pred_1, event_level = "second") %>% mutate(model = "Boosted (gbm)")
+)
+
+ggplot(roc_df, aes(x = 1 - specificity, y = sensitivity, color = model)) +
+  geom_path(linewidth = 1) +
+  geom_abline(linetype = "dashed") +
+  labs(
+    title = "Validation ROC curves",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  )
+```
+
+## Task 6 — Final evaluation on the test set + conclusion
+
+### Aim
+
+We now take the **best model chosen on the validation set** (highest validation ROC AUC) and evaluate it once on the **held-out test set**.\
+This gives an unbiased estimate of performance on new customers (given our feature/label setup).
+
+### Test-set evaluation (best model only)
+
+```{r task6-test-evaluation, message=FALSE, warning=FALSE}
+# Helper to add prediction columns (same idea as Task 5)
+add_pred_cols <- function(df, prob_vec) {
+  df %>%
+    mutate(
+      .pred_1 = prob_vec,
+      .pred_0 = 1 - .pred_1,
+      .pred_class = factor(if_else(.pred_1 >= 0.5, "1", "0"), levels = c("0","1"))
+    )
+}
+
+# Create test predictions for each model
+# Decision tree
+test_tree <- test_df %>%
+  mutate(p_tree = predict(tree_fit, newdata = test_df, type = "prob")[, "1"])
+
+# Random forest
+test_rf <- test_df %>%
+  mutate(p_rf = predict(rf_fit, data = test_df)$predictions[, "1"])
+
+# Boosted (gbm): must use the same design-matrix terms as training
+test_gbm_in <- test_df %>%
+  mutate(y_num = as.integer(as.character(y_last30))) %>%   # y not used for prediction, but keeps structure consistent
+  select(-y_last30)
+
+X_test <- model.matrix(gbm_terms, data = test_gbm_in)
+p_gbm_test <- predict(gbm_fit, newdata = X_test, n.trees = 600, type = "response")
+test_gbm <- test_df %>% mutate(p_gbm = p_gbm_test)
+
+# Choose the best model from validation
+best_model
+
+# Build the "best" test dataframe with unified .pred_1 / .pred_class
+test_best <- if (best_model == "Decision tree") {
+  add_pred_cols(test_tree, test_tree$p_tree) %>% mutate(model = "Decision tree")
+} else if (best_model == "Random forest") {
+  add_pred_cols(test_rf, test_rf$p_rf) %>% mutate(model = "Random forest")
+} else {
+  add_pred_cols(test_gbm, test_gbm$p_gbm) %>% mutate(model = "Boosted (gbm)")
+}
+
+# Metrics on test set (best model only)
+test_metrics <- bind_rows(
+  accuracy(test_best, truth = y_last30, estimate = .pred_class),
+  sens(test_best, truth = y_last30, estimate = .pred_class, event_level = "second"),
+  spec(test_best, truth = y_last30, estimate = .pred_class, event_level = "second"),
+  roc_auc(test_best, truth = y_last30, .pred_1, event_level = "second")
+) %>%
+  mutate(model = best_model) %>%
+  select(model, .metric, .estimate)
+
+test_metrics
+
+# Confusion matrix (test)
+conf_mat(test_best, truth = y_last30, estimate = .pred_class)
+
+# ROC curve (test)
+roc_test <- roc_curve(test_best, y_last30, .pred_1, event_level = "second")
+
+ggplot(roc_test, aes(x = 1 - specificity, y = sensitivity)) +
+  geom_path(linewidth = 1) +
+  geom_abline(linetype = "dashed") +
+  labs(
+    title = paste("Test ROC curve —", best_model),
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  )
+```
+
+## Conclusion
+
+Based on **validation ROC AUC**, the selected model was `r best_model`.
+
+On the **test set**, the model achieved the following key results (from the table above):
+
+**ROC AUC:** `r round(test_metrics$.estimate[test_metrics$.metric=="roc_auc"], 3)`
+
+**Accuracy:** `r round(test_metrics$.estimate[test_metrics$.metric=="accuracy"], 3)`
+
+**Sensitivity (TPR):**`r round(test_metrics$.estimate[test_metrics$.metric=="sens"], 3)`
+
+**Specificity (TNR):** `r round(test_metrics$.estimate[test_metrics$.metric=="spec"], 3)`
+
+Overall, performance is reasonable for a simple tree-based baseline using interpretable customer features.
+
+## Critical reflection / limitations
+
+**Target choice:** Using “purchase activity in the final 30 days” as the outcome is a practical way to represent recent engagement, but the length of this window is subjective. A different time horizon could lead to a different class balance and potentially different model conclusions.
+
+**Selection bias:** Transactions without a recorded Customer ID are excluded from the analysis. This may bias the results toward more identifiable or repeat customers and under-represent occasional or anonymous purchasers.
+
+**Temporal framing:** Feature construction was restricted to transactions occurring before the prediction window in order to avoid data leakage. However, the dataset captures behaviour from a single time period, meaning the results may not generalise well to other seasons or years with different purchasing patterns.
+
+**Threshold choice:** Metrics such as accuracy, sensitivity, and specificity are calculated using a fixed probability threshold of 0.5. In practice, this threshold would likely be adjusted based on the relative costs of false positives versus false negatives, which could change model performance assessments.
+
+## Next steps
+
+Further analysis could examine alternative prediction windows (for example, 14, 60, or 90 days), incorporate additional customer-level features such as tenure or engagement trends, and apply time-based validation or cross-validation to better assess model robustness and generalisation.
