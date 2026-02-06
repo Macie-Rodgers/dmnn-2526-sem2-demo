@@ -20,11 +20,6 @@ We'll use ["UCI Bank Marketing"](https://archive.ics.uci.edu/dataset/222/bank+ma
 
 The Bank Marketing dataset is a real-world dataset from the UCI Machine Learning Repository about direct marketing campaigns carried out by a Portuguese bank. The bank used telephone calls to contact potential customers and offer them a term deposit product — a kind of savings or investment account.
 
-```{r}
-library(reticulate)
-use_python("C:/Program Files/Python313/python.exe", required = TRUE)
-```
-
 
 ## Part A: First Contact with the Dataset
 

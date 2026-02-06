@@ -2,4 +2,168 @@
 title: "macierodgers-week3"
 format: html
 ---
+## Task 1 — Modelling dataset
 
+#| label: load-data
+
+# This dataset uses semicolons as separators.
+bank <- read.csv("bank-additional.csv", sep = ";")
+
+glimpse(bank)
+
+# Check target distribution
+bank %>% count(y) %>% mutate(prop = n / sum(n))
+
+## Task 2 — Target variable
+
+#| label: target
+
+# Ensure y is a factor with consistent ordering
+bank <- bank %>%
+  mutate(y = factor(y, levels = c("no", "yes")))
+
+levels(bank$y)
+
+## Task 3 — Feature selection
+
+#| label: select-features
+
+# Minimal, interpretable feature set (you can add/remove a few, but keep it small)
+keep_features <- c(
+  "y",
+  "age", "job", "marital", "education", "default", "housing", "loan",
+  "contact", "month", "day_of_week",
+  "duration",
+  "campaign", "pdays", "previous", "poutcome",
+  "emp.var.rate", "cons.price.idx", "cons.conf.idx", "euribor3m", "nr.employed"
+)
+
+df <- bank %>% select(any_of(keep_features))
+
+glimpse(df)
+
+## Task 4 — Models
+
+#| label: split
+
+# 70/15/15 split (train/validation/test) using two-step split
+split_1 <- initial_split(df, prop = 0.85, strata = y)
+train_val <- training(split_1)
+test_data <- testing(split_1)
+
+split_2 <- initial_split(train_val, prop = 0.8235, strata = y) # ~70% total train
+train_data <- training(split_2)
+val_data <- testing(split_2)
+
+c(train = nrow(train_data), validation = nrow(val_data), test = nrow(test_data))
+
+#| label: recipe
+
+rec <- recipe(y ~ ., data = train_data) %>%
+  step_unknown(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors()) %>%
+  step_impute_median(all_numeric_predictors())
+
+rec
+
+#| label: specs
+
+tree_spec <- decision_tree(
+  tree_depth = 5,
+  min_n = 50
+) %>%
+  set_engine("rpart") %>%
+  set_mode("classification")
+
+rf_spec <- rand_forest(
+  trees = 500,
+  mtry = 6,
+  min_n = 20
+) %>%
+  set_engine("ranger", importance = "impurity") %>%
+  set_mode("classification")
+
+boost_spec <- boost_tree(
+  trees = 600,
+  tree_depth = 3,
+  learn_rate = 0.05,
+  mtry = 6,
+  min_n = 20,
+  loss_reduction = 0
+) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+#| label: fit
+
+wf_tree <- workflow() %>% add_recipe(rec) %>% add_model(tree_spec)
+wf_rf   <- workflow() %>% add_recipe(rec) %>% add_model(rf_spec)
+wf_gb   <- workflow() %>% add_recipe(rec) %>% add_model(boost_spec)
+
+fit_tree <- fit(wf_tree, data = train_data)
+fit_rf   <- fit(wf_rf,   data = train_data)
+fit_gb   <- fit(wf_gb,   data = train_data)
+
+## Task 5 — Model comparison
+
+#| label: metrics
+
+met <- metric_set(accuracy, roc_auc)
+
+eval_classification <- function(fit_obj, data, model_name) {
+  p_class <- predict(fit_obj, data, type = "class")
+  p_prob  <- predict(fit_obj, data, type = "prob")
+
+  out <- bind_cols(data %>% select(y), p_class, p_prob) %>%
+    met(truth = y, estimate = .pred_class, .pred_yes) %>%
+    mutate(model = model_name)
+
+  out
+}
+
+#| label: train-vs-val
+
+train_results <- bind_rows(
+  eval_classification(fit_tree, train_data, "Decision tree"),
+  eval_classification(fit_rf,   train_data, "Random forest"),
+  eval_classification(fit_gb,   train_data, "Boosted tree")
+) %>%
+  mutate(split = "train")
+
+val_results <- bind_rows(
+  eval_classification(fit_tree, val_data, "Decision tree"),
+  eval_classification(fit_rf,   val_data, "Random forest"),
+  eval_classification(fit_gb,   val_data, "Boosted tree")
+) %>%
+  mutate(split = "validation")
+
+bind_rows(train_results, val_results) %>%
+  arrange(.metric, model, split)
+
+## Task 6 — Final evaluation
+
+#| label: test-eval
+
+test_results <- bind_rows(
+  eval_classification(fit_tree, test_data, "Decision tree"),
+  eval_classification(fit_rf,   test_data, "Random forest"),
+  eval_classification(fit_gb,   test_data, "Boosted tree")
+)
+
+test_results %>% arrange(.metric, desc(.estimate))
+
+#| label: tree-plot
+fit_tree %>%
+  extract_fit_parsnip() %>%
+  rpart.plot(type = 2, extra = 104, roundint = FALSE)
+
+#| label: rf-importance
+rf_engine <- extract_fit_engine(fit_rf)
+
+tibble(
+  variable = names(rf_engine$variable.importance),
+  importance = as.numeric(rf_engine$variable.importance)
+) %>%
+  arrange(desc(importance)) %>%
+  slice_head(n = 15)

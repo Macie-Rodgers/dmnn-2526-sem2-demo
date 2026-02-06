@@ -1,0 +1,173 @@
+---
+title: "macierodgers-week1"
+format: html
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+---
+
+## Task 1 — Load and inspect
+
+```{r}
+library(readr)
+library(here)
+library(dplyr)
+library(lubridate)
+
+df_raw <- readr::read_csv(
+  here("data", "raw", "online_retail_II(4).csv"),
+  show_col_types = FALSE
+)
+
+dim(df_raw)
+glimpse(df_raw, width = 60)
+head(df_raw, 10)
+```
+This dataset has **525,461 rows and 8 variables**: Invoice, StockCode, Description, Quantity, InvoiceDate, Price, Customer ID, Country.
+
+One row represents a single invoice line item (a specific product on an invoice) with a quantity and price at a given time, linked to an Invoice and sometimes a Customer ID. This matters because a single invoice/customer can appear across many rows, so for analysis we often need to aggregate (e.g., to invoice-level or customer-level) rather than treat each row as an independent purchase.
+
+---
+
+## Task 2 — Unit of analysis (decision)
+
+A single row in the raw dataset is a **line item** (one product on one invoice). For further analysis I choose **customer-level** observations (one row per customer) because it supports segmentation/modelling and avoids treating multiple line-items from the same customer as independent. A downside is that missing Customer IDs mean some transactions cannot be used in customer-level modelling. At customer-level I would derive features such as total spend, number of invoices, number of distinct products, and recency (days since last purchase).
+
+---
+
+## Task 3 — Data quality and validity audit
+
+```{r}
+# Missing values per column
+missing_counts <- df_raw %>% summarise(across(everything(), ~ sum(is.na(.x))))
+missing_counts
+
+# Basic sanity checks and ranges
+df_raw %>% summarise(
+  n_rows = n(),
+  n_invoices = n_distinct(Invoice),
+  n_customers = n_distinct(`Customer ID`, na.rm = TRUE),
+  n_countries = n_distinct(Country),
+  qty_min = min(Quantity, na.rm = TRUE),
+  qty_max = max(Quantity, na.rm = TRUE),
+  price_min = min(Price, na.rm = TRUE),
+  price_max = max(Price, na.rm = TRUE)
+)
+```
+
+Issues spotted (at least 3):
+
+Missing Customer IDs → limits customer-level analysis and may bias results.
+
+Returns/cancellations → negative Quantity and/or negative Price (and invoices starting with “C”) can distort revenue and demand patterns.
+
+Extreme values / outliers → very large Quantity/Price values can dominate summary stats and plots if not handled carefully.
+
+---
+
+## Task 4 — Minimal cleaning
+
+```{r}
+df1 <- df_raw %>%
+  mutate(
+    InvoiceDate = dmy_hms(InvoiceDate),
+    TotalPrice = Quantity * Price,
+    is_cancel = str_starts(Invoice, "C")
+  )
+
+# Evidence of cancellations / non-positive quantities / non-positive prices
+df1 %>% summarise(
+  cancel_invoice_rows = sum(is_cancel, na.rm = TRUE),
+  nonpos_qty_rows = sum(Quantity <= 0, na.rm = TRUE),
+  nonpos_price_rows = sum(Price <= 0, na.rm = TRUE)
+)
+
+# "Purchases only" dataset for EDA
+df_purchases <- df1 %>%
+  filter(!is_cancel, Quantity > 0, Price > 0)
+
+dim(df1)
+dim(df_purchases)
+```
+
+I keep the raw data (df1) and create a cleaned dataset (df_purchases) for purchase behaviour, so returns/cancellations and invalid values do not dominate patterns in revenue/demand plots.
+
+---
+
+## Task 5 — Exploratory Data Analysis (5 outputs)
+
+**EDA 1 - Daily revenue over time**
+
+```{r}
+rev_daily <- df_purchases %>%
+  mutate(date = as.Date(InvoiceDate)) %>%
+  group_by(date) %>%
+  summarise(revenue = sum(TotalPrice), .groups = "drop")
+
+ggplot(rev_daily, aes(date, revenue)) + geom_line()
+```
+
+**EDA 2 - Daily number of invoices**
+
+```{r}
+inv_daily <- df_purchases %>%
+  mutate(date = as.Date(InvoiceDate)) %>%
+  group_by(date) %>%
+  summarise(n_invoices = n_distinct(Invoice), .groups = "drop")
+
+ggplot(inv_daily, aes(date, n_invoices)) + geom_line()
+
+```
+
+**EDA 3 - Basket value distribution (invoice-level)** 
+
+```{r}
+basket <- df_purchases %>%
+  group_by(Invoice) %>%
+  summarise(basket_value = sum(TotalPrice), .groups = "drop")
+
+ggplot(basket, aes(basket_value)) + geom_histogram(bins = 60)
+
+```
+
+**EDA 4 - Top 10 countries by revenue**
+
+```{r}
+country_rev <- df_purchases %>%
+  group_by(Country) %>%
+  summarise(revenue = sum(TotalPrice), .groups = "drop") %>%
+  arrange(desc(revenue)) %>%
+  slice_head(n = 10)
+
+country_rev
+ggplot(country_rev, aes(reorder(Country, revenue), revenue)) + geom_col() + coord_flip()
+
+```
+
+**EDA 5 - Top 10 products by revenue**
+
+```{r}
+prod_rev <- df_purchases %>%
+  group_by(StockCode, Description) %>%
+  summarise(revenue = sum(TotalPrice), .groups = "drop") %>%
+  arrange(desc(revenue)) %>%
+  slice_head(n = 10)
+
+prod_rev
+
+```
+
+---
+
+## Task 6 - Short reflection + what I'd do next week
+
+**What I learned from Week 1:**  
+The dataset is transactional at the line-item level, meaning the choice of analysis unit is crucial. Purchasing behaviour varies over time, revenue is highly concentrated among a small number of countries and products, and basket values are strongly right-skewed.
+
+**Biggest data risk:**  
+Returns/cancellations and missing Customer IDs could introduce bias if they are not handled explicitly during analysis.
+
+**Week 2 plan:**  
+Create a customer-level dataset (e.g. Recency, Frequency, and Monetary value features) from `df_purchases`, then apply clustering or segmentation techniques and evaluate clusters by comparing spending patterns and purchase frequency.
