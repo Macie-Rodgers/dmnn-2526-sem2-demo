@@ -1,0 +1,250 @@
+---
+title: "mr460-week5-clustering"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    df-print: paged
+  pdf:
+    toc: true
+    number-sections: true
+editor: source
+---
+```{r}
+library(tidyverse)
+library(lubridate)
+library(here)
+
+# clustering helpers
+library(cluster)   # silhouette()
+set.seed(42)
+```
+
+## Step 1 — Unit of analysis
+
+**Unit of analysis:** **customers** (one row per customer).
+
+**Why this unit makes sense for segmentation:**  
+Customer segmentation aims to group people with similar purchasing behaviour so we can describe “types” of shoppers (e.g., frequent small-basket buyers vs. rare high spenders). The Online Retail data is transactional (many rows per customer), so clustering requires us to **aggregate** transactions into a compact customer “behaviour profile” (features) before applying distance-based clustering.
+
+**Key limitation:** customers with missing `Customer ID` cannot be clustered (they have no stable identifier), and aggregation can hide within-customer variability (e.g., a customer who changes behaviour over time).
+
+##Step 2 — Feature construction (customer behaviour profiles)
+
+We keep a **purchases-only** dataset by removing cancellations (Invoices starting with `"C"`), and non-sensical values (`Quantity <= 0` or `Price <= 0`).
+
+```{r load-clean, message=FALSE, warning=FALSE}
+df_raw <- readr::read_csv(
+  here("data", "raw", "online_retail_II(4).csv"),
+  show_col_types = FALSE
+)
+
+df1 <- df_raw %>%
+  mutate(
+    InvoiceDate = dmy_hms(InvoiceDate),
+    TotalPrice  = Quantity * Price,
+    is_cancel   = str_starts(Invoice, "C")
+  )
+
+df_purchases <- df1 %>%
+  filter(!is_cancel, Quantity > 0, Price > 0) %>%
+  filter(!is.na(InvoiceDate))
+
+# Keep only customers with IDs (needed for customer-level aggregation)
+df_purchases_id <- df_purchases %>% filter(!is.na(`Customer ID`))
+
+glimpse(df_purchases_id)
+```
+We create **one row per customer** and compute behaviour features:
+
+- **Recency (days):** how many days since last purchase (relative to dataset end).
+- **Frequency:** number of invoices (repeat buying).
+- **Monetary value:** total historical spend.
+- Additional structure: basket size/value, product variety.
+
+```{r make-customer-features, message=FALSE, warning=FALSE}
+cutoff_date <- max(df_purchases_id$InvoiceDate, na.rm = TRUE)
+
+cust <- df_purchases_id %>%
+  group_by(`Customer ID`) %>%
+  summarise(
+    n_invoices       = n_distinct(Invoice),              # frequency proxy
+    n_items          = n(),                              # engagement proxy
+    n_products       = n_distinct(StockCode),            # variety proxy
+    total_spend      = sum(TotalPrice, na.rm = TRUE),    # monetary proxy
+    avg_item_price   = mean(Price, na.rm = TRUE),
+    avg_basket_value = total_spend / n_invoices,
+    avg_items_per_invoice = n_items / n_invoices,
+    last_purchase    = max(InvoiceDate, na.rm = TRUE),
+    recency_days     = as.numeric(difftime(cutoff_date, last_purchase, units = "days")),
+    active_span_days = as.numeric(difftime(max(InvoiceDate), min(InvoiceDate), units = "days")),
+    .groups = "drop"
+  ) %>%
+  select(-last_purchase)
+
+summary(cust)
+```
+### Skew handling (practical)
+
+Spend-like features are often extremely right-skewed. For clustering, this can cause a few large values to dominate distances even after scaling. A common, transparent fix is `log1p()` (log(1+x)) for strictly-positive, heavy-tailed features.
+
+```{r skew-fix, message=FALSE, warning=FALSE}
+cust_feat <- cust %>%
+  mutate(
+    total_spend_log = log1p(total_spend),
+    avg_basket_value_log = log1p(avg_basket_value),
+    n_invoices_log = log1p(n_invoices),
+    n_products_log = log1p(n_products),
+    n_items_log = log1p(n_items)
+  )
+
+cust_feat %>%
+  select(`Customer ID`, total_spend, total_spend_log, n_invoices, n_invoices_log) %>%
+  slice_head(n = 5)
+```
+##Step 3 — Scaling (why it matters)
+
+Clustering here is **distance-based**. If features are on different scales (e.g., `total_spend` in thousands while `recency_days` is in tens), then **large-scale features dominate** Euclidean distance and determine clusters regardless of the others.
+
+**Method used:** standardisation (z-scores) with `scale()`.
+
+**What would happen without scaling:** clusters would mostly separate customers by the largest-range features (typically spend), and recency/frequency would contribute little.
+
+```{r scale-features, message=FALSE, warning=FALSE}
+# Choose a compact feature set for clustering
+X <- cust_feat %>%
+  transmute(
+    recency_days,
+    n_invoices_log,
+    total_spend_log,
+    avg_basket_value_log,
+    n_products_log
+  )
+
+# Standardise (mean 0, sd 1)
+X_scaled <- scale(X)
+
+# sanity check: means ~0, sds ~1
+apply(X_scaled, 2, mean) %>% round(3)
+apply(X_scaled, 2, sd) %>% round(3)
+```
+##Step 4 — Apply clustering
+
+### 4A — K-means (required)
+#### Choosing *k* (avoid arbitrary decisions)
+
+K-means requires a number of clusters *k*. There is no single “correct” value, but we can make an informed choice using:
+
+- **Elbow / within-cluster sum of squares (WSS):** diminishing returns as k increases.
+- **Silhouette:** how well-separated clusters are (higher is better), but we treat it as guidance, not a goal.
+
+```{r choose-k, message=FALSE, warning=FALSE}
+wss <- map_dbl(2:10, ~kmeans(X_scaled, centers = .x, nstart = 25)$tot.withinss)
+
+sil <- map_dbl(2:10, function(k){
+  km <- kmeans(X_scaled, centers = k, nstart = 25)
+  ss <- silhouette(km$cluster, dist(X_scaled))
+  mean(ss[, 3])
+})
+
+k_diagnostics <- tibble(k = 2:10, wss = wss, silhouette = sil)
+k_diagnostics
+```
+
+```{r plot-k, message=FALSE, warning=FALSE}
+ggplot(k_diagnostics, aes(k, wss)) +
+  geom_line() + geom_point() +
+  labs(title = "Elbow plot (WSS)", x = "k", y = "Total within-cluster SS")
+
+ggplot(k_diagnostics, aes(k, silhouette)) +
+  geom_line() + geom_point() +
+  labs(title = "Average silhouette by k", x = "k", y = "Average silhouette")
+```
+
+**Chosen k:** I use **k = 4** as a compromise between (1) clear diminishing returns in WSS after a small number of clusters and (2) a reasonable silhouette without producing tiny clusters that are hard to interpret.  
+(If your plots clearly suggest a different k, you can change it here and explain why.)
+
+```{r kmeans-fit, message=FALSE, warning=FALSE}
+k <- 4
+km <- kmeans(X_scaled, centers = k, nstart = 50)
+
+cust_km <- cust_feat %>%
+  mutate(cluster = factor(km$cluster))
+
+cust_km %>% count(cluster) %>% arrange(desc(n))
+```
+
+### 4B — Inspect cluster centres (interpretation-friendly)
+
+K-means centres are in **scaled units**, so to interpret we compare **original-scale summaries** by cluster.
+
+```{r cluster-profiles, message=FALSE, warning=FALSE}
+profiles <- cust_km %>%
+  group_by(cluster) %>%
+  summarise(
+    n_customers = n(),
+    recency_days_mean = mean(recency_days),
+    n_invoices_mean = mean(n_invoices),
+    total_spend_mean = mean(total_spend),
+    avg_basket_value_mean = mean(avg_basket_value),
+    n_products_mean = mean(n_products),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(n_customers))
+
+profiles
+```
+
+### 4C — Visualise clusters with PCA (2D view)
+
+We reduce the (scaled) feature space to 2 principal components for a **visual diagnostic** (not proof of correctness).
+
+```{r pca-plot, message=FALSE, warning=FALSE}
+pca <- prcomp(X_scaled, center = FALSE, scale. = FALSE)
+
+pca_df <- as_tibble(pca$x[, 1:2]) %>%
+  setNames(c("PC1", "PC2")) %>%
+  mutate(cluster = cust_km$cluster)
+
+ggplot(pca_df, aes(PC1, PC2, color = cluster)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "Customer clusters (K-means) shown in PCA space")
+```
+##Hierarchical clustering (comparison)
+
+Hierarchical clustering can reveal whether the partitioning looks similar under a different assumption (agglomerative merging).
+
+```{r hierarchical, message=FALSE, warning=FALSE}
+d <- dist(X_scaled)
+hc <- hclust(d, method = "ward.D2")
+
+# Cut to k clusters for a direct comparison
+hc_clusters <- cutree(hc, k = k)
+
+cust_hc <- cust_feat %>%
+  mutate(hc_cluster = factor(hc_clusters))
+
+cust_hc %>% count(hc_cluster) %>% arrange(desc(n))
+```
+##Step 5 — Evaluate and interpret (critical discussion)
+
+Use the profile table above to describe clusters in plain language. A typical pattern is:
+
+- **Low recency (recent buyers) + higher frequency/value** → “active core customers”
+- **High recency (haven’t bought recently) + low frequency/value** → “lapsed / one-off customers”
+- **High basket value but low frequency** → “occasional big spenders”
+- **High variety** → “browsers / diverse purchasers”
+
+**Write your final interpretation using your actual `profiles` output** (cluster numbers are arbitrary; interpret by their statistics).
+
+### Are clusters balanced?
+
+Discuss whether one cluster dominates (often there is a very large “low-activity” cluster). If extremely imbalanced, note that k-means can favour spherical clusters and may compress small but meaningful segments.
+
+### Sensitivity + limitations
+
+- **Parameter sensitivity:** K-means depends on *k* and initialisation. We reduced this with `nstart = 50`, but different *k* can change the story.
+- **Feature sensitivity:** clustering results are driven by feature choices. Adding/removing recency or log transforms can change geometry.
+- **Scaling dependence:** without scaling, `total_spend` would dominate and clusters would mostly reflect spend alone.
+- **Business meaning:** clusters may reflect data-collection artefacts (e.g., observation window, missing IDs) rather than real “types”.
