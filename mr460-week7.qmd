@@ -1,0 +1,490 @@
+---
+title: "mr460-week7"
+format: html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# WEEK 7 - Feedforward Neural Networks
+
+## Logistic Regression vs MLP
+
+## ReLU vs tanh
+
+## Capacity + Regularisation
+
+```{r}
+set.seed(460)
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) install.packages("ggplot2")
+if (!requireNamespace("readr", quietly = TRUE)) install.packages("readr")
+
+library(ggplot2)
+library(readr)
+```
+
+```{r}
+file_candidates <- c(
+  "heart_failure_clinical_records_dataset.csv",
+  "data/heart_failure_clinical_records_dataset.csv"
+)
+
+file_path <- file_candidates[file.exists(file_candidates)][1]
+
+if (!is.na(file_path)) {
+  df <- read_csv(file_path, show_col_types = FALSE)
+} else {
+  url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/00519/heart_failure_clinical_records_dataset.csv"
+  df <- tryCatch(
+    read_csv(url, show_col_types = FALSE),
+    error = function(e) {
+      stop("Could not load the dataset. Save the CSV into your project folder and try again.")
+    }
+  )
+}
+
+df$DEATH_EVENT <- as.numeric(df$DEATH_EVENT)
+
+cat("Rows:", nrow(df), " Columns:", ncol(df), "\n")
+cat("Class balance:\n")
+print(table(df$DEATH_EVENT))
+```
+
+```{r}
+stratified_split <- function(data, target = "DEATH_EVENT", train_prop = 0.70, val_prop_within_train = 0.80) {
+  idx0 <- which(data[[target]] == 0)
+  idx1 <- which(data[[target]] == 1)
+
+  train0 <- sample(idx0, size = floor(length(idx0) * train_prop))
+  train1 <- sample(idx1, size = floor(length(idx1) * train_prop))
+
+  test_idx <- setdiff(seq_len(nrow(data)), c(train0, train1))
+  train_full_idx <- c(train0, train1)
+
+  train_full <- data[train_full_idx, ]
+  test_df <- data[test_idx, ]
+
+  idx0_tf <- which(train_full[[target]] == 0)
+  idx1_tf <- which(train_full[[target]] == 1)
+
+  train_inner0 <- sample(idx0_tf, size = floor(length(idx0_tf) * val_prop_within_train))
+  train_inner1 <- sample(idx1_tf, size = floor(length(idx1_tf) * val_prop_within_train))
+
+  train_idx <- c(train_inner0, train_inner1)
+  val_idx <- setdiff(seq_len(nrow(train_full)), train_idx)
+
+  list(
+    train = train_full[train_idx, ],
+    val   = train_full[val_idx, ],
+    test  = test_df
+  )
+}
+
+splits <- stratified_split(df)
+
+train_df <- splits$train
+val_df   <- splits$val
+test_df  <- splits$test
+
+cat("\nTrain class balance:\n")
+print(prop.table(table(train_df$DEATH_EVENT)))
+cat("\nValidation class balance:\n")
+print(prop.table(table(val_df$DEATH_EVENT)))
+cat("\nTest class balance:\n")
+print(prop.table(table(test_df$DEATH_EVENT)))
+```
+
+```{r}
+feature_names <- setdiff(names(df), "DEATH_EVENT")
+
+x_train_raw <- as.matrix(train_df[, feature_names])
+x_val_raw   <- as.matrix(val_df[, feature_names])
+x_test_raw  <- as.matrix(test_df[, feature_names])
+
+y_train <- matrix(train_df$DEATH_EVENT, ncol = 1)
+y_val   <- matrix(val_df$DEATH_EVENT, ncol = 1)
+y_test  <- matrix(test_df$DEATH_EVENT, ncol = 1)
+
+train_means <- colMeans(x_train_raw)
+train_sds <- apply(x_train_raw, 2, sd)
+train_sds[train_sds == 0] <- 1
+
+scale_with_train <- function(x, means, sds) {
+  scale(x, center = means, scale = sds)
+}
+
+x_train <- scale_with_train(x_train_raw, train_means, train_sds)
+x_val   <- scale_with_train(x_val_raw, train_means, train_sds)
+x_test  <- scale_with_train(x_test_raw, train_means, train_sds)
+```
+
+```{r}
+sigmoid <- function(z) 1 / (1 + exp(-pmin(pmax(z, -30), 30)))
+
+binary_accuracy <- function(y_true, y_prob, threshold = 0.5) {
+  y_pred <- ifelse(y_prob >= threshold, 1, 0)
+  mean(y_pred == y_true)
+}
+
+roc_auc_manual <- function(y_true, y_prob) {
+  y_true <- as.numeric(y_true)
+  y_prob <- as.numeric(y_prob)
+
+  pos <- y_prob[y_true == 1]
+  neg <- y_prob[y_true == 0]
+
+  if (length(pos) == 0 || length(neg) == 0) return(NA_real_)
+
+  ranks <- rank(c(pos, neg))
+  pos_ranks <- ranks[seq_along(pos)]
+  (sum(pos_ranks) - length(pos) * (length(pos) + 1) / 2) / (length(pos) * length(neg))
+}
+
+bce_loss <- function(y_true, y_prob) {
+  eps <- 1e-8
+  y_prob <- pmin(pmax(y_prob, eps), 1 - eps)
+  -mean(y_true * log(y_prob) + (1 - y_true) * log(1 - y_prob))
+}
+```
+
+# Task 1
+
+```{r}
+lr_fit <- glm(DEATH_EVENT ~ ., data = train_df, family = binomial())
+
+val_prob_lr  <- predict(lr_fit, newdata = val_df, type = "response")
+test_prob_lr <- predict(lr_fit, newdata = test_df, type = "response")
+
+lr_results <- data.frame(
+  Model = "Logistic Regression",
+  Split = c("Validation", "Test"),
+  Accuracy = c(binary_accuracy(y_val, val_prob_lr), binary_accuracy(y_test, test_prob_lr)),
+  ROC_AUC = c(roc_auc_manual(y_val, val_prob_lr), roc_auc_manual(y_test, test_prob_lr))
+)
+
+lr_results
+```
+
+```{r}
+relu <- function(z) {
+  z <- as.matrix(z)
+  z[z < 0] <- 0
+  z
+}
+
+relu_deriv <- function(z) {
+  z <- as.matrix(z)
+  out <- matrix(0, nrow = nrow(z), ncol = ncol(z))
+  out[z > 0] <- 1
+  out
+}
+
+tanh_act <- function(z) {
+  z <- as.matrix(z)
+  tanh(z)
+}
+
+tanh_deriv <- function(z) {
+  z <- as.matrix(z)
+  1 - tanh(z)^2
+}
+
+init_model <- function(input_dim, hidden_units) {
+  list(
+    W1 = matrix(rnorm(input_dim * hidden_units, sd = 0.1),
+                nrow = input_dim, ncol = hidden_units),
+    b1 = rep(0, hidden_units),
+    W2 = matrix(rnorm(hidden_units, sd = 0.1),
+                nrow = hidden_units, ncol = 1),
+    b2 = 0
+  )
+}
+
+predict_mlp <- function(model, X, activation = "relu") {
+  X <- as.matrix(X)
+  W1 <- as.matrix(model$W1)
+  W2 <- as.matrix(model$W2)
+
+  Z1 <- sweep(X %*% W1, 2, model$b1, FUN = "+")
+  if (activation == "relu") {
+    A1 <- relu(Z1)
+  } else {
+    A1 <- tanh_act(Z1)
+  }
+
+  A1 <- matrix(A1, nrow = nrow(X))
+  Z2 <- A1 %*% W2 + model$b2
+  as.numeric(sigmoid(Z2))
+}
+
+train_mlp <- function(
+  X_train, y_train, X_val, y_val,
+  hidden_units = 32,
+  activation = "relu",
+  epochs = 300,
+  lr = 0.01,
+  l2 = 0,
+  seed = 460
+) {
+  set.seed(seed)
+
+  X_train <- as.matrix(X_train)
+  X_val <- as.matrix(X_val)
+  y_train <- matrix(as.numeric(y_train), ncol = 1)
+  y_val <- matrix(as.numeric(y_val), ncol = 1)
+
+  n <- nrow(X_train)
+  p <- ncol(X_train)
+
+  model <- init_model(p, hidden_units)
+
+  history <- data.frame(
+    epoch = integer(),
+    train_loss = numeric(),
+    val_loss = numeric(),
+    train_acc = numeric(),
+    val_acc = numeric()
+  )
+
+  for (epoch in 1:epochs) {
+    W1 <- as.matrix(model$W1)
+    W2 <- as.matrix(model$W2)
+
+    Z1 <- sweep(X_train %*% W1, 2, model$b1, FUN = "+")
+
+    if (activation == "relu") {
+      A1 <- relu(Z1)
+      dA1_dZ1 <- relu_deriv(Z1)
+    } else {
+      A1 <- tanh_act(Z1)
+      dA1_dZ1 <- tanh_deriv(Z1)
+    }
+
+    A1 <- matrix(A1, nrow = n)
+    dA1_dZ1 <- matrix(dA1_dZ1, nrow = n)
+
+    Z2 <- A1 %*% W2 + model$b2
+    A2 <- matrix(sigmoid(Z2), ncol = 1)
+
+    dZ2 <- A2 - y_train
+    dW2 <- (t(A1) %*% dZ2) / n + l2 * W2
+    db2 <- mean(dZ2)
+
+    dA1 <- dZ2 %*% t(W2)
+    dZ1 <- dA1 * dA1_dZ1
+
+    dW1 <- (t(X_train) %*% dZ1) / n + l2 * W1
+    db1 <- colMeans(dZ1)
+
+    model$W1 <- W1 - lr * dW1
+    model$b1 <- model$b1 - lr * db1
+    model$W2 <- W2 - lr * dW2
+    model$b2 <- model$b2 - lr * db2
+
+    train_prob <- predict_mlp(model, X_train, activation)
+    val_prob   <- predict_mlp(model, X_val, activation)
+
+    history <- rbind(
+      history,
+      data.frame(
+        epoch = epoch,
+        train_loss = bce_loss(y_train, train_prob),
+        val_loss = bce_loss(y_val, val_prob),
+        train_acc = binary_accuracy(y_train, train_prob),
+        val_acc = binary_accuracy(y_val, val_prob)
+      )
+    )
+  }
+
+  list(model = model, history = history)
+}
+
+plot_learning_curves <- function(history, title_text) {
+  p1 <- ggplot(history, aes(x = epoch)) +
+    geom_line(aes(y = train_loss, colour = "Train Loss")) +
+    geom_line(aes(y = val_loss, colour = "Validation Loss")) +
+    labs(title = paste(title_text, "- Loss"), y = "Loss", colour = "") +
+    theme_minimal()
+
+  p2 <- ggplot(history, aes(x = epoch)) +
+    geom_line(aes(y = train_acc, colour = "Train Accuracy")) +
+    geom_line(aes(y = val_acc, colour = "Validation Accuracy")) +
+    labs(title = paste(title_text, "- Accuracy"), y = "Accuracy", colour = "") +
+    theme_minimal()
+
+  print(p1)
+  print(p2)
+}
+
+summarise_model <- function(model_name, fit_obj, X_val, y_val, X_test, y_test, activation) {
+  val_prob <- predict_mlp(fit_obj$model, X_val, activation)
+  test_prob <- predict_mlp(fit_obj$model, X_test, activation)
+
+  data.frame(
+    Model = model_name,
+    Split = c("Validation", "Test"),
+    Accuracy = c(binary_accuracy(y_val, val_prob), binary_accuracy(y_test, test_prob)),
+    ROC_AUC = c(roc_auc_manual(y_val, val_prob), roc_auc_manual(y_test, test_prob))
+  )
+}
+```
+
+```{r}
+mlp_relu_fit <- train_mlp(
+  X_train = x_train,
+  y_train = y_train,
+  X_val = x_val,
+  y_val = y_val,
+  hidden_units = 32,
+  activation = "relu",
+  epochs = 300,
+  lr = 0.01
+)
+
+summarise_model("MLP ReLU (32)", mlp_relu_fit, x_val, y_val, x_test, y_test, "relu")
+plot_learning_curves(mlp_relu_fit$history, "MLP ReLU (32 units)")
+```
+
+# Task 2
+
+```{r}
+mlp_tanh_fit <- train_mlp(
+  X_train = x_train,
+  y_train = y_train,
+  X_val = x_val,
+  y_val = y_val,
+  hidden_units = 32,
+  activation = "tanh",
+  epochs = 300,
+  lr = 0.01
+)
+
+rbind(
+  summarise_model("MLP ReLU (32)", mlp_relu_fit, x_val, y_val, x_test, y_test, "relu"),
+  summarise_model("MLP tanh (32)", mlp_tanh_fit, x_val, y_val, x_test, y_test, "tanh")
+)
+
+plot_learning_curves(mlp_tanh_fit$history, "MLP tanh (32 units)")
+```
+
+# Task 3
+
+```{r}
+mlp_small_fit <- train_mlp(
+  X_train = x_train,
+  y_train = y_train,
+  X_val = x_val,
+  y_val = y_val,
+  hidden_units = 8,
+  activation = "relu",
+  epochs = 300,
+  lr = 0.01
+)
+
+mlp_large_fit <- train_mlp(
+  X_train = x_train,
+  y_train = y_train,
+  X_val = x_val,
+  y_val = y_val,
+  hidden_units = 128,
+  activation = "relu",
+  epochs = 300,
+  lr = 0.01
+)
+
+mlp_large_l2_fit <- train_mlp(
+  X_train = x_train,
+  y_train = y_train,
+  X_val = x_val,
+  y_val = y_val,
+  hidden_units = 128,
+  activation = "relu",
+  epochs = 300,
+  lr = 0.01,
+  l2 = 0.001
+)
+
+rbind(
+  summarise_model("Small MLP (8)", mlp_small_fit, x_val, y_val, x_test, y_test, "relu"),
+  summarise_model("Large MLP (128)", mlp_large_fit, x_val, y_val, x_test, y_test, "relu"),
+  summarise_model("Large MLP + L2 (128)", mlp_large_l2_fit, x_val, y_val, x_test, y_test, "relu")
+)
+
+plot_learning_curves(mlp_small_fit$history, "Small MLP (8 units)")
+plot_learning_curves(mlp_large_fit$history, "Large MLP (128 units)")
+plot_learning_curves(mlp_large_l2_fit$history, "Large MLP + L2 (128 units)")
+```
+
+# Task 4
+
+```{r}
+final_candidates <- data.frame(
+  Model = c(
+    "Logistic Regression",
+    "MLP ReLU (32)",
+    "MLP tanh (32)",
+    "Small MLP (8)",
+    "Large MLP (128)",
+    "Large MLP + L2 (128)"
+  ),
+  Validation_AUC = c(
+    lr_results$ROC_AUC[lr_results$Split == "Validation"],
+    summarise_model("MLP ReLU (32)", mlp_relu_fit, x_val, y_val, x_test, y_test, "relu")$ROC_AUC[1],
+    summarise_model("MLP tanh (32)", mlp_tanh_fit, x_val, y_val, x_test, y_test, "tanh")$ROC_AUC[1],
+    summarise_model("Small MLP (8)", mlp_small_fit, x_val, y_val, x_test, y_test, "relu")$ROC_AUC[1],
+    summarise_model("Large MLP (128)", mlp_large_fit, x_val, y_val, x_test, y_test, "relu")$ROC_AUC[1],
+    summarise_model("Large MLP + L2 (128)", mlp_large_l2_fit, x_val, y_val, x_test, y_test, "relu")$ROC_AUC[1]
+  )
+)
+
+final_candidates
+```
+
+```{r}
+best_model_name <- final_candidates$Model[which.max(final_candidates$Validation_AUC)]
+best_model_name
+```
+
+```{r}
+if (best_model_name == "Logistic Regression") {
+  final_test_acc <- lr_results$Accuracy[lr_results$Split == "Test"]
+  final_test_auc <- lr_results$ROC_AUC[lr_results$Split == "Test"]
+} else if (best_model_name == "MLP ReLU (32)") {
+  tmp <- summarise_model("MLP ReLU (32)", mlp_relu_fit, x_val, y_val, x_test, y_test, "relu")
+  final_test_acc <- tmp$Accuracy[2]
+  final_test_auc <- tmp$ROC_AUC[2]
+} else if (best_model_name == "MLP tanh (32)") {
+  tmp <- summarise_model("MLP tanh (32)", mlp_tanh_fit, x_val, y_val, x_test, y_test, "tanh")
+  final_test_acc <- tmp$Accuracy[2]
+  final_test_auc <- tmp$ROC_AUC[2]
+} else if (best_model_name == "Small MLP (8)") {
+  tmp <- summarise_model("Small MLP (8)", mlp_small_fit, x_val, y_val, x_test, y_test, "relu")
+  final_test_acc <- tmp$Accuracy[2]
+  final_test_auc <- tmp$ROC_AUC[2]
+} else if (best_model_name == "Large MLP (128)") {
+  tmp <- summarise_model("Large MLP (128)", mlp_large_fit, x_val, y_val, x_test, y_test, "relu")
+  final_test_acc <- tmp$Accuracy[2]
+  final_test_auc <- tmp$ROC_AUC[2]
+} else {
+  tmp <- summarise_model("Large MLP + L2 (128)", mlp_large_l2_fit, x_val, y_val, x_test, y_test, "relu")
+  final_test_acc <- tmp$Accuracy[2]
+  final_test_auc <- tmp$ROC_AUC[2]
+}
+
+data.frame(
+  Selected_Model = best_model_name,
+  Test_Accuracy = final_test_acc,
+  Test_ROC_AUC = final_test_auc
+)
+```
+
+# Short analysis notes
+
+- Logistic regression is linear because it models the log-odds as a linear combination of the input features.
+- If the MLP does better on validation metrics, that suggests the hidden layer captures nonlinear relationships.
+- ReLU often converges faster, while tanh can be slower because gradients shrink near saturation.
+- Larger networks have more capacity and can overfit more easily on small datasets.
+- L2 regularisation helps reduce overfitting by discouraging very large weights.
+- Training data fits the model, validation data selects the model, and the test set is used once at the end for final evaluation.
