@@ -1,0 +1,345 @@
+---
+title: "mr460-week8"
+format: html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+# Week 8 - Convolutional Neural Networks
+
+## Focus: From Architecture to Interpretation
+
+## Dataset choice
+
+I selected **Fashion MNIST** for this task. This dataset is appropriate for CNN modelling because it consists of grayscale images of clothing items where the class depends on spatial structure such as edges, contours, shapes, and textures. CNNs are designed for this type of data because convolutional filters can learn local visual patterns and reuse them across different image locations.
+
+Fashion MNIST contains **10 classes**, and each image has shape **28 × 28 × 1**.
+
+```{r}
+set.seed(460)
+
+needed <- c("keras3","ggplot2","dplyr","tidyr","gridExtra","knitr")
+to_install <- needed[!sapply(needed, requireNamespace, quietly = TRUE)]
+if(length(to_install)>0) install.packages(to_install)
+
+library(keras3)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(knitr)
+
+fashion <- dataset_fashion_mnist()
+
+x_train_full <- fashion$train$x
+y_train_full <- fashion$train$y
+x_test <- fashion$test$x
+y_test <- fashion$test$y
+
+class_names <- c(
+"T-shirt/top","Trouser","Pullover","Dress","Coat",
+"Sandal","Shirt","Sneaker","Bag","Ankle boot"
+)
+```
+
+# Task 1 - Reconnect to the Data
+
+## Input shape
+
+```{r}
+input_summary <- data.frame(
+Item=c("Training set shape","Test set shape","Single image shape","Number of classes"),
+Value=c(
+paste(dim(x_train_full),collapse=" x "),
+paste(dim(x_test),collapse=" x "),
+"28 x 28 x 1",
+as.character(length(unique(y_train_full)))
+)
+)
+
+kable(input_summary)
+```
+
+## Class distribution
+
+```{r}
+train_dist <- data.frame(
+class_id=0:9,
+class_name=class_names,
+count=as.numeric(table(factor(y_train_full,levels=0:9)))
+)
+
+ggplot(train_dist,aes(x=reorder(class_name,count),y=count))+
+geom_col()+
+coord_flip()+
+labs(
+title="Class distribution in Fashion MNIST training set",
+x="Class",
+y="Count"
+)+
+theme_minimal()
+```
+
+## One example per class
+
+```{r}
+par(mfrow=c(2,5),mar=c(1,1,2,1))
+
+for(k in 0:9){
+
+idx <- which(y_train_full==k)[1]
+
+image(
+1:28,1:28,
+t(apply(x_train_full[idx,,],2,rev)),
+col=gray.colors(256,start=1,end=0),
+axes=FALSE,
+xlab="",ylab="",
+main=class_names[k+1]
+)
+
+}
+```
+
+## Written interpretation
+
+A single training example is a **28 × 28 grayscale image** representing one clothing item. Pixel values encode intensity and neighbouring pixels combine to form meaningful visual structures such as edges, curves, and outlines.
+
+Spatial structure matters because the difference between classes depends on how these local patterns are arranged. CNNs learn small visual detectors that capture edges, shapes, and textures and combine them to recognise objects.
+
+A fully connected network would be inefficient here because it treats every pixel independently and ignores spatial relationships between neighbouring pixels.
+
+# Pre-processing and validation split
+
+```{r}
+x_train_full <- x_train_full/255
+x_test <- x_test/255
+
+x_train_full <- array_reshape(x_train_full,c(nrow(x_train_full),28,28,1))
+x_test <- array_reshape(x_test,c(nrow(x_test),28,28,1))
+
+set.seed(460)
+
+val_n <- 10000
+val_idx <- sample(1:dim(x_train_full)[1],val_n)
+
+x_val <- x_train_full[val_idx,,,]
+y_val <- y_train_full[val_idx]
+
+x_train <- x_train_full[-val_idx,,,]
+y_train <- y_train_full[-val_idx]
+
+split_summary <- data.frame(
+Split=c("Train","Validation","Test"),
+Shape=c(
+paste(dim(x_train),collapse=" x "),
+paste(dim(x_val),collapse=" x "),
+paste(dim(x_test),collapse=" x ")
+)
+)
+
+kable(split_summary)
+```
+
+# Task 2 - Build a Baseline CNN
+
+The baseline model contains:
+- one convolution layer
+- one pooling layer
+- one fully connected output layer
+
+```{r}
+baseline_model <- keras_model_sequential() %>%
+layer_conv_2d(
+filters=16,
+kernel_size=c(3,3),
+activation="relu",
+input_shape=c(28,28,1)
+)%>%
+layer_max_pooling_2d(pool_size=c(2,2))%>%
+layer_flatten()%>%
+layer_dense(units=10,activation="softmax")
+
+baseline_model %>% compile(
+optimizer="adam",
+loss="sparse_categorical_crossentropy",
+metrics="accuracy"
+)
+```
+
+## Parameter count
+
+```{r}
+baseline_params <- baseline_model %>% count_params()
+
+kable(data.frame(
+Model="Baseline CNN",
+Trainable_Parameters=baseline_params
+))
+```
+
+## Train baseline model
+
+```{r}
+epochs_used <- 8
+
+history_baseline <- baseline_model %>% fit(
+x_train,
+y_train,
+epochs=epochs_used,
+batch_size=128,
+validation_data=list(x_val,y_val),
+verbose=2
+)
+```
+
+# Task 3 - Architectural Extension
+
+The extended model adds **dropout** after the pooling layer to reduce overfitting.
+
+```{r}
+extended_model <- keras_model_sequential() %>%
+layer_conv_2d(
+filters=16,
+kernel_size=c(3,3),
+activation="relu",
+input_shape=c(28,28,1)
+)%>%
+layer_max_pooling_2d(pool_size=c(2,2))%>%
+layer_dropout(rate=0.25)%>%
+layer_flatten()%>%
+layer_dense(units=10,activation="softmax")
+
+extended_model %>% compile(
+optimizer="adam",
+loss="sparse_categorical_crossentropy",
+metrics="accuracy"
+)
+```
+
+## Parameter count
+
+```{r}
+extended_params <- extended_model %>% count_params()
+
+kable(data.frame(
+Model="Extended CNN",
+Trainable_Parameters=extended_params
+))
+```
+
+## Train extended model
+
+```{r}
+history_extended <- extended_model %>% fit(
+x_train,
+y_train,
+epochs=epochs_used,
+batch_size=128,
+validation_data=list(x_val,y_val),
+verbose=2
+)
+```
+
+# Task 4 - Training Behaviour Analysis
+
+```{r}
+get_history_df <- function(history_obj,model_name){
+
+data.frame(
+epoch=seq_along(history_obj$metrics$loss),
+loss=history_obj$metrics$loss,
+val_loss=history_obj$metrics$val_loss,
+accuracy=history_obj$metrics$accuracy,
+val_accuracy=history_obj$metrics$val_accuracy,
+model=model_name
+)
+
+}
+
+hist_base <- get_history_df(history_baseline,"Baseline CNN")
+hist_ext <- get_history_df(history_extended,"Extended CNN")
+
+hist_all <- bind_rows(hist_base,hist_ext)
+```
+
+## Training loss
+
+```{r}
+ggplot(hist_all,aes(x=epoch,y=loss,color=model))+
+geom_line(linewidth=1)+
+labs(title="Training loss",x="Epoch",y="Loss")+
+theme_minimal()
+```
+
+## Validation loss
+
+```{r}
+ggplot(hist_all,aes(x=epoch,y=val_loss,color=model))+
+geom_line(linewidth=1)+
+labs(title="Validation loss",x="Epoch",y="Validation loss")+
+theme_minimal()
+```
+
+## Training accuracy
+
+```{r}
+ggplot(hist_all,aes(x=epoch,y=accuracy,color=model))+
+geom_line(linewidth=1)+
+labs(title="Training accuracy",x="Epoch",y="Accuracy")+
+theme_minimal()
+```
+
+## Validation accuracy
+
+```{r}
+ggplot(hist_all,aes(x=epoch,y=val_accuracy,color=model))+
+geom_line(linewidth=1)+
+labs(title="Validation accuracy",x="Epoch",y="Validation accuracy")+
+theme_minimal()
+```
+
+# Task 5 - Controlled Test Set Evaluation
+
+```{r}
+baseline_probs <- predict(baseline_model, x_test, verbose = 0)
+extended_probs <- predict(extended_model, x_test, verbose = 0)
+
+baseline_pred <- max.col(baseline_probs) - 1
+extended_pred <- max.col(extended_probs) - 1
+
+baseline_acc <- mean(baseline_pred == y_test)
+extended_acc <- mean(extended_pred == y_test)
+
+eps <- 1e-7
+
+baseline_loss <- -mean(log(pmax(
+  baseline_probs[cbind(1:length(y_test), y_test + 1)],
+  eps
+)))
+
+extended_loss <- -mean(log(pmax(
+  extended_probs[cbind(1:length(y_test), y_test + 1)],
+  eps
+)))
+
+test_results <- data.frame(
+  Model = c("Baseline CNN", "Extended CNN"),
+  Test_Loss = c(baseline_loss, extended_loss),
+  Test_Accuracy = c(baseline_acc, extended_acc)
+)
+
+kable(test_results, digits = 4)
+```
+
+# Conclusion
+
+CNNs are powerful for image tasks because they exploit spatial structure. Convolutional layers learn local feature detectors, pooling reduces spatial dimensions and improves robustness, and dropout can help reduce overfitting.
+
+The test set must not be used to guide architectural decisions because it is intended to provide an unbiased estimate of generalisation performance. If the test set is used during model development, it can lead to overfitting to the test data and overly optimistic results.
+
+In this experiment, test performance broadly aligns with validation trends. The extended model with dropout shows slightly improved generalisation compared to the baseline model, consistent with its smoother validation behaviour. The differences between models are relatively small, so they should not be over-interpreted.
+
+Overall, architectural decisions influence convergence behaviour and generalisation performance, which is why analysing training dynamics is as important as comparing final accuracy.
